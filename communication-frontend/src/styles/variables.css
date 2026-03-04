@@ -1,0 +1,64 @@
+/* Communication Platform - Warm Color Theme */
+
+:root {
+  /* Primary Colors - Warm Orange-Red */
+  --color-primary: #FF6B35;
+  --color-primary-light: #FF8A5B;
+  --color-primary-dark: #E55A2B;
+  
+  /* Secondary Colors - Apricot */
+  --color-secondary: #F7C59F;
+  --color-secondary-light: #FFDDC1;
+  --color-secondary-dark: #E5A97A;
+  
+  /* Background Colors */
+  --color-bg-primary: #FFF8F0;
+  --color-bg-secondary: #FFFFFF;
+  --color-bg-tertiary: #FFF0E6;
+  
+  /* Text Colors */
+  --color-text-primary: #2D3748;
+  --color-text-secondary: #4A5568;
+  --color-text-muted: #718096;
+  --color-text-light: #A0AEC0;
+  
+  /* Border Colors */
+  --color-border: #E8DDD4;
+  --color-border-light: #F0E6DC;
+  
+  /* Status Colors */
+  --color-success: #48BB78;
+  --color-warning: #F6AD55;
+  --color-error: #FC8181;
+  --color-info: #63B3ED;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Element Plus Theme Overrides */
+  --el-color-primary: var(--color-primary);
+  --el-color-primary-light-3: var(--color-primary-light);
+  --el-color-primary-light-5: #FFB599;
+  --el-color-primary-light-7: #FFDACC;
+  --el-color-primary-light-8: #FFE8E0;
+  --el-color-primary-light-9: #FFF4F0;
+  --el-color-primary-dark-2: var(--color-primary-dark);
+  --el-bg-color: var(--color-bg-primary);
+  --el-bg-color-page: var(--color-bg-primary);
+  --el-border-color: var(--color-border);
+  --el-border-color-light: var(--color-border-light);
+}

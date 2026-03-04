@@ -1,0 +1,41 @@
+package com.communication.dto;
+
+import com.communication.entity.ContentStatus;
+import com.communication.entity.MediaType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+import java.util.List;
+
+public class CreateContentRequest {
+
+    @NotBlank(message = "Title is required")
+    @Size(max = 200, message = "Title must be less than 200 characters")
+    private String title;
+
+    private String body;
+
+    private String mediaUrl;
+
+    private MediaType mediaType = MediaType.TEXT;
+
+    private ContentStatus status = ContentStatus.PUBLISHED;
+
+    @Size(max = 10, message = "最多添加10个标签")
+    private List<String> tags;
+
+    public CreateContentRequest() {}
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    public String getBody() { return body; }
+    public void setBody(String body) { this.body = body; }
+    public String getMediaUrl() { return mediaUrl; }
+    public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
+    public MediaType getMediaType() { return mediaType; }
+    public void setMediaType(MediaType mediaType) { this.mediaType = mediaType; }
+    public ContentStatus getStatus() { return status; }
+    public void setStatus(ContentStatus status) { this.status = status; }
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
+}

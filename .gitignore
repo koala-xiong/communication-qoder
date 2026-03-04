@@ -1,0 +1,38 @@
+# Backend
+communication-backend/target/
+communication-backend/*.iml
+communication-backend/.idea/
+communication-backend/*.log
+
+# Frontend
+communication-frontend/node_modules/
+communication-frontend/dist/
+communication-frontend/.vite/
+communication-frontend/coverage/
+communication-frontend/playwright-report/
+communication-frontend/test-results/
+communication-frontend/src/auto-imports.d.ts
+communication-frontend/src/components.d.ts
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Uploads
+uploads/
+
+# Logs
+*.log
+logs/
