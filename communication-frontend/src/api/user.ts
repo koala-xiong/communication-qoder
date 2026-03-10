@@ -9,12 +9,26 @@ export interface UserProfile {
   createdAt?: string
 }
 
+interface ApiResponse<T> {
+  data: T
+}
+
 export const userApi = {
-  getUserByUsername(username: string) {
-    return http.get<UserProfile>(`/users/${username}`)
+  async getUserByUsername(username: string): Promise<UserProfile | null> {
+    try {
+      const response = await http.get<ApiResponse<UserProfile>>(`/users/${username}`)
+      return response.data.data
+    } catch (error) {
+      return null
+    }
   },
 
-  getUserById(id: number) {
-    return http.get<UserProfile>(`/users/id/${id}`)
+  async getUserById(id: number): Promise<UserProfile | null> {
+    try {
+      const response = await http.get<ApiResponse<UserProfile>>(`/users/${id}`)
+      return response.data.data
+    } catch (error) {
+      return null
+    }
   }
 }

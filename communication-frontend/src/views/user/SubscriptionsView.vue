@@ -95,12 +95,14 @@ const loadFeed = async (reset = false) => {
   feedLoading.value = true
   try {
     const res = await subscriptionApi.getSubscriptionFeed(feedPage.value)
-    if (reset) {
-      feed.value = res.content
-    } else {
-      feed.value.push(...res.content)
+    if (res) {
+      if (reset) {
+        feed.value = res.content
+      } else {
+        feed.value.push(...res.content)
+      }
+      feedIsLast.value = res.last
     }
-    feedIsLast.value = res.last
   } catch (error) {
     ElMessage.error('加载动态失败')
   } finally {
@@ -122,12 +124,14 @@ const loadFollowing = async (reset = false) => {
   followingLoading.value = true
   try {
     const res = await subscriptionApi.getMySubscriptions(followingPage.value)
-    if (reset) {
-      following.value = res.content
-    } else {
-      following.value.push(...res.content)
+    if (res) {
+      if (reset) {
+        following.value = res.content
+      } else {
+        following.value.push(...res.content)
+      }
+      followingIsLast.value = res.last
     }
-    followingIsLast.value = res.last
   } catch (error) {
     ElMessage.error('加载关注列表失败')
   } finally {
@@ -143,9 +147,13 @@ const loadMoreFollowing = () => {
 const handleUnsubscribe = async (userId: number) => {
   unsubscribing.value = userId
   try {
-    await subscriptionApi.unsubscribe(userId)
-    following.value = following.value.filter(u => u.id !== userId)
-    ElMessage.success('已取消关注')
+    const success = await subscriptionApi.unsubscribe(userId)
+    if (success) {
+      following.value = following.value.filter(u => u.id !== userId)
+      ElMessage.success('已取消关注')
+    } else {
+      ElMessage.error('取消关注失败')
+    }
   } catch (error) {
     ElMessage.error('取消关注失败')
   } finally {

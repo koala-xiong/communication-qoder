@@ -216,7 +216,10 @@ const formatDate = (dateStr: string) => {
 const loadStats = async () => {
   statsLoading.value = true
   try {
-    stats.value = await dashboardApi.getStats()
+    const result = await dashboardApi.getStats()
+    if (result) {
+      stats.value = result
+    }
   } catch (error) {
     ElMessage.error('加载统计数据失败')
   } finally {
@@ -234,12 +237,14 @@ const loadContents = async (reset = false) => {
   try {
     const status = contentStatus.value || undefined
     const res = await dashboardApi.getMyContents(status as ContentStatus | undefined, contentsPage.value)
-    if (reset) {
-      contents.value = res.content
-    } else {
-      contents.value.push(...res.content)
+    if (res) {
+      if (reset) {
+        contents.value = res.content
+      } else {
+        contents.value.push(...res.content)
+      }
+      contentsIsLast.value = res.last
     }
-    contentsIsLast.value = res.last
   } catch (error) {
     ElMessage.error('加载内容列表失败')
   } finally {
@@ -277,8 +282,10 @@ const handleAvatarChange = async (e: Event) => {
   avatarUploading.value = true
   try {
     const user = await dashboardApi.uploadAvatar(file)
-    authStore.updateUser(user)
-    ElMessage.success('头像更新成功')
+    if (user) {
+      authStore.updateUser(user)
+      ElMessage.success('头像更新成功')
+    }
   } catch (error) {
     ElMessage.error('头像上传失败')
   } finally {
@@ -291,8 +298,10 @@ const handleSaveProfile = async () => {
   profileSaving.value = true
   try {
     const user = await dashboardApi.updateProfile({ bio: profileForm.bio })
-    authStore.updateUser(user)
-    ElMessage.success('资料更新成功')
+    if (user) {
+      authStore.updateUser(user)
+      ElMessage.success('资料更新成功')
+    }
   } catch (error) {
     ElMessage.error('保存失败')
   } finally {

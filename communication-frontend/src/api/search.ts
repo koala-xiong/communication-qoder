@@ -1,6 +1,12 @@
 import http from './http'
 import type { Content, PageResponse } from './content'
 
+interface ApiResponse<T> {
+  success: boolean
+  message: string
+  data: T
+}
+
 export interface User {
   id: number
   username: string
@@ -9,27 +15,47 @@ export interface User {
 }
 
 export const searchApi = {
-  searchContents(q?: string, tag?: string, page = 0, size = 10) {
-    return http.get<PageResponse<Content>>('/search/contents', {
-      params: { q, tag, page, size }
-    })
+  async searchContents(q?: string, tag?: string, page = 0, size = 10): Promise<PageResponse<Content> | null> {
+    try {
+      const response = await http.get<ApiResponse<PageResponse<Content>>>('/search/contents', {
+        params: { q, tag, page, size }
+      })
+      return response.data.data
+    } catch (error) {
+      return null
+    }
   },
 
-  searchUsers(q: string, page = 0, size = 10) {
-    return http.get<PageResponse<User>>('/search/users', {
-      params: { q, page, size }
-    })
+  async searchUsers(q: string, page = 0, size = 10): Promise<PageResponse<User> | null> {
+    try {
+      const response = await http.get<ApiResponse<PageResponse<User>>>('/search/users', {
+        params: { q, page, size }
+      })
+      return response.data.data
+    } catch (error) {
+      return null
+    }
   },
 
-  getPopularTags(limit = 20) {
-    return http.get<string[]>('/search/tags/popular', {
-      params: { limit }
-    })
+  async getPopularTags(limit = 20): Promise<string[]> {
+    try {
+      const response = await http.get<ApiResponse<string[]>>('/search/tags/popular', {
+        params: { limit }
+      })
+      return response.data.data || []
+    } catch (error) {
+      return []
+    }
   },
 
-  suggestTags(q: string) {
-    return http.get<string[]>('/search/tags/suggest', {
-      params: { q }
-    })
+  async suggestTags(q: string): Promise<string[]> {
+    try {
+      const response = await http.get<ApiResponse<string[]>>('/search/tags/suggest', {
+        params: { q }
+      })
+      return response.data.data || []
+    } catch (error) {
+      return []
+    }
   }
 }

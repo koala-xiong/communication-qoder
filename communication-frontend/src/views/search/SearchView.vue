@@ -137,7 +137,7 @@ const handleSearch = () => {
   }
 }
 
-const handleTabChange = (tab: string) => {
+const handleTabChange = (tab: string | number) => {
   if (tab === 'users' && users.value.length === 0 && searchQuery.value) {
     searchUsers(true)
   }
@@ -153,12 +153,14 @@ const searchContents = async (reset = false) => {
   try {
     const tag = route.query.tag as string | undefined
     const res = await searchApi.searchContents(searchQuery.value || undefined, tag, contentsPage.value)
-    if (reset) {
-      contents.value = res.content
-    } else {
-      contents.value.push(...res.content)
+    if (res) {
+      if (reset) {
+        contents.value = res.content
+      } else {
+        contents.value.push(...res.content)
+      }
+      contentsIsLast.value = res.last
     }
-    contentsIsLast.value = res.last
   } catch (error) {
     console.error('Search contents error:', error)
   } finally {
@@ -182,12 +184,14 @@ const searchUsers = async (reset = false) => {
   usersLoading.value = true
   try {
     const res = await searchApi.searchUsers(searchQuery.value, usersPage.value)
-    if (reset) {
-      users.value = res.content
-    } else {
-      users.value.push(...res.content)
+    if (res) {
+      if (reset) {
+        users.value = res.content
+      } else {
+        users.value.push(...res.content)
+      }
+      usersIsLast.value = res.last
     }
-    usersIsLast.value = res.last
   } catch (error) {
     console.error('Search users error:', error)
   } finally {
@@ -209,6 +213,7 @@ const loadPopularTags = async () => {
     popularTags.value = await searchApi.getPopularTags(20)
   } catch (error) {
     console.error('Load popular tags error:', error)
+    popularTags.value = []
   }
 }
 
