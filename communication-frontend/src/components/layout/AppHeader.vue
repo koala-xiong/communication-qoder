@@ -184,7 +184,9 @@ const navigateTo = (path: string) => {
   left: 0;
   right: 0;
   height: 60px;
-  background: var(--color-bg-secondary);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
   z-index: 1000;
 }

@@ -22,6 +22,17 @@ const previewUrl = computed(() => props.modelValue)
 const isImage = computed(() => props.mediaType === 'IMAGE')
 const isVideo = computed(() => props.mediaType === 'VIDEO')
 
+const mediaTypeLabel = computed(() => {
+  switch (props.mediaType ?? 'TEXT') {
+    case 'IMAGE':
+      return '图片'
+    case 'VIDEO':
+      return '视频'
+    default:
+      return '文字'
+  }
+})
+
 const handleFileChange = async (event: Event) => {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -31,7 +42,7 @@ const handleFileChange = async (event: Event) => {
   const isVideoFile = file.type.startsWith('video/')
 
   if (!isImageFile && !isVideoFile) {
-    ElMessage.error('Only images and videos are allowed')
+    ElMessage.error('仅支持图片或视频文件')
     return
   }
 
@@ -46,9 +57,9 @@ const handleFileChange = async (event: Event) => {
     const data = response.data.data
     emit('update:modelValue', data.url)
     emit('update:mediaType', data.mediaType)
-    ElMessage.success('File uploaded successfully')
+    ElMessage.success('上传成功')
   } catch (error: any) {
-    const message = error.response?.data?.message || 'Upload failed'
+    const message = error.response?.data?.message || '上传失败'
     ElMessage.error(message)
   } finally {
     uploading.value = false
@@ -76,7 +87,7 @@ const handleRemove = () => {
       <div class="media-badge">
         <el-icon v-if="isImage"><Picture /></el-icon>
         <el-icon v-else-if="isVideo"><VideoPlay /></el-icon>
-        <span>{{ mediaType }}</span>
+        <span>{{ mediaTypeLabel }}</span>
       </div>
     </div>
 
@@ -91,13 +102,13 @@ const handleRemove = () => {
 
       <div class="upload-content" v-if="!uploading">
         <el-icon class="upload-icon"><Plus /></el-icon>
-        <p class="upload-text">Click to upload image or video</p>
-        <p class="upload-hint">Supports: JPEG, PNG, GIF, MP4, WebM</p>
+        <p class="upload-text">点击上传图片或视频</p>
+        <p class="upload-hint">支持 JPEG、PNG、GIF、MP4、WebM</p>
       </div>
 
       <div class="upload-progress" v-else>
         <el-progress :percentage="uploadProgress" :stroke-width="8" />
-        <p>Uploading...</p>
+        <p>上传中...</p>
       </div>
     </label>
   </div>

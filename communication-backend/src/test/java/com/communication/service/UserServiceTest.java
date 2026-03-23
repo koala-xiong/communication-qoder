@@ -38,6 +38,9 @@ class UserServiceTest {
     @Mock
     private JwtUtil jwtUtil;
 
+    @Mock
+    private UserAccountPersistenceService userAccountPersistenceService;
+
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -67,10 +70,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Register - Success")
     void register_Success() {
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-        when(userRepository.existsByEmail(anyString())).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
+        when(userAccountPersistenceService.persistNewUser(registerRequest)).thenReturn(testUser);
         when(jwtUtil.generateToken(anyString())).thenReturn("jwt-token");
 
         AuthResponse response = userService.register(registerRequest);
@@ -78,13 +78,15 @@ class UserServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isEqualTo("jwt-token");
         assertThat(response.getUser().getUsername()).isEqualTo("testuser");
-        verify(userRepository).save(any(User.class));
+        verify(userAccountPersistenceService).persistNewUser(registerRequest);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     @DisplayName("Register - Username already exists")
     void register_UsernameExists_ThrowsException() {
-        when(userRepository.existsByUsername("testuser")).thenReturn(true);
+        when(userAccountPersistenceService.persistNewUser(registerRequest))
+                .thenThrow(new BadRequestException("Username already exists"));
 
         assertThatThrownBy(() -> userService.register(registerRequest))
                 .isInstanceOf(BadRequestException.class)
@@ -96,8 +98,8 @@ class UserServiceTest {
     @Test
     @DisplayName("Register - Email already exists")
     void register_EmailExists_ThrowsException() {
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-        when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
+        when(userAccountPersistenceService.persistNewUser(registerRequest))
+                .thenThrow(new BadRequestException("Email already exists"));
 
         assertThatThrownBy(() -> userService.register(registerRequest))
                 .isInstanceOf(BadRequestException.class)
@@ -143,7 +145,8 @@ class UserServiceTest {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.login(loginRequest))
-                .isInstanceOf(BadCredentialsException.class);
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessage("用户不存在");
     }
 
     @Test
@@ -153,6 +156,7 @@ class UserServiceTest {
         when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(false);
 
         assertThatThrownBy(() -> userService.login(loginRequest))
-                .isInstanceOf(BadCredentialsException.class);
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessage("密码错误");
     }
 }

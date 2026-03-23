@@ -27,7 +27,7 @@ const isAuthor = computed(() => {
 const formattedDate = computed(() => {
   if (!content.value) return ''
   const date = new Date(content.value.createdAt)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -43,11 +43,11 @@ const handleEdit = () => {
 const handleDelete = async () => {
   try {
     await ElMessageBox.confirm(
-      'This action cannot be undone. Are you sure you want to delete this content?',
-      'Delete Content',
+      '删除后无法恢复，确定要删除这篇内容吗？',
+      '删除内容',
       {
-        confirmButtonText: 'Delete',
-        cancelButtonText: 'Cancel',
+        confirmButtonText: '删除',
+        cancelButtonText: '取消',
         type: 'warning'
       }
     )
@@ -93,18 +93,18 @@ const goToAuthorProfile = () => {
             <div class="content-stats">
               <span class="view-count">
                 <el-icon><View /></el-icon>
-                {{ content.viewCount }} views
+                {{ content.viewCount }} 次浏览
               </span>
               <span class="comment-count">
                 <el-icon><ChatLineRound /></el-icon>
-                {{ content.commentCount || 0 }} comments
+                {{ content.commentCount || 0 }} 条评论
               </span>
             </div>
           </div>
 
           <div class="content-actions" v-if="isAuthor">
-            <el-button :icon="Edit" @click="handleEdit">Edit</el-button>
-            <el-button type="danger" :icon="Delete" @click="handleDelete">Delete</el-button>
+            <el-button :icon="Edit" @click="handleEdit">编辑</el-button>
+            <el-button type="danger" :icon="Delete" @click="handleDelete">删除</el-button>
           </div>
         </div>
 
@@ -135,8 +135,8 @@ const goToAuthorProfile = () => {
       </div>
 
       <div class="not-found" v-else>
-        <el-empty description="Content not found">
-          <el-button type="primary" @click="router.push('/')">Back to Home</el-button>
+        <el-empty description="内容不存在或已删除">
+          <el-button type="primary" @click="router.push('/')">返回首页</el-button>
         </el-empty>
       </div>
     </div>

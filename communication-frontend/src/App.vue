@@ -20,6 +20,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--color-bg-primary);
 }
 
 .main-content {

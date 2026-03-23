@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import { commentApi, type Comment } from '@/api/comment'
@@ -73,14 +73,15 @@ const fetchComments = async (reset = false) => {
   
   loading.value = true
   try {
-    const res = await commentApi.getComments(props.contentId, page.value)
+    const response = await commentApi.getComments(props.contentId, page.value)
+    const pageData = response.data.data
     if (reset) {
-      comments.value = res.content
+      comments.value = pageData.content
     } else {
-      comments.value.push(...res.content)
+      comments.value.push(...pageData.content)
     }
-    isLast.value = res.last
-    totalComments.value = res.totalElements
+    isLast.value = pageData.last
+    totalComments.value = pageData.totalElements
   } catch (error) {
     ElMessage.error('加载评论失败')
   } finally {
@@ -96,7 +97,8 @@ const loadMore = () => {
 const handleSubmit = async (text: string) => {
   submitting.value = true
   try {
-    const newComment = await commentApi.createComment(props.contentId, { body: text })
+    const response = await commentApi.createComment(props.contentId, { body: text })
+    const newComment = response.data.data
     comments.value.unshift(newComment)
     totalComments.value++
     ElMessage.success('评论发表成功')
@@ -109,7 +111,8 @@ const handleSubmit = async (text: string) => {
 
 const handleReply = async (parentId: number, text: string) => {
   try {
-    const reply = await commentApi.createComment(props.contentId, { body: text, parentId })
+    const response = await commentApi.createComment(props.contentId, { body: text, parentId })
+    const reply = response.data.data
     const parent = comments.value.find(c => c.id === parentId)
     if (parent) {
       if (!parent.replies) parent.replies = []
@@ -161,6 +164,15 @@ const handleDelete = async (commentId: number) => {
 onMounted(() => {
   fetchComments(true)
 })
+
+watch(
+  () => props.contentId,
+  (id) => {
+    if (id != null && Number.isFinite(id)) {
+      fetchComments(true)
+    }
+  }
+)
 </script>
 
 <style scoped>

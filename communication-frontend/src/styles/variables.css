@@ -1,64 +1,66 @@
-/* Communication Platform - Warm Color Theme */
+/* Communication — Twitter / X inspired blue theme */
 
 :root {
-  /* Primary Colors - Warm Orange-Red */
-  --color-primary: #FF6B35;
-  --color-primary-light: #FF8A5B;
-  --color-primary-dark: #E55A2B;
-  
-  /* Secondary Colors - Apricot */
-  --color-secondary: #F7C59F;
-  --color-secondary-light: #FFDDC1;
-  --color-secondary-dark: #E5A97A;
-  
-  /* Background Colors */
-  --color-bg-primary: #FFF8F0;
-  --color-bg-secondary: #FFFFFF;
-  --color-bg-tertiary: #FFF0E6;
-  
-  /* Text Colors */
-  --color-text-primary: #2D3748;
-  --color-text-secondary: #4A5568;
-  --color-text-muted: #718096;
-  --color-text-light: #A0AEC0;
-  
-  /* Border Colors */
-  --color-border: #E8DDD4;
-  --color-border-light: #F0E6DC;
-  
-  /* Status Colors */
-  --color-success: #48BB78;
-  --color-warning: #F6AD55;
-  --color-error: #FC8181;
-  --color-info: #63B3ED;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  
-  /* Border Radius */
+  /* Primary — Twitter blue */
+  --color-primary: #1d9bf0;
+  --color-primary-light: #47a9f0;
+  --color-primary-dark: #1a8cd8;
+
+  /* Secondary — light blue accents */
+  --color-secondary: #8ec5ff;
+  --color-secondary-light: #e8f4fd;
+  --color-secondary-dark: #4ba3e8;
+
+  /* Backgrounds — white / cool gray */
+  --color-bg-primary: #f7f9f9;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #eff3f4;
+
+  /* Text — Twitter-like contrast */
+  --color-text-primary: #0f1419;
+  --color-text-secondary: #536471;
+  --color-text-muted: #536471;
+  --color-text-light: #8b98a5;
+
+  /* Borders */
+  --color-border: #eff3f4;
+  --color-border-light: #f7f9f9;
+
+  /* Status */
+  --color-success: #00ba7c;
+  --color-warning: #f7931a;
+  --color-error: #f4212e;
+  --color-info: #1d9bf0;
+
+  /* Shadows — neutral, slightly cool */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 20, 25, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 20, 25, 0.08);
+  --shadow-lg: 0 12px 24px rgba(15, 20, 25, 0.1);
+
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 9999px;
-  
-  /* Transitions */
+
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
 
-  /* Element Plus Theme Overrides */
+  /* Element Plus — align with blue primary */
   --el-color-primary: var(--color-primary);
-  --el-color-primary-light-3: var(--color-primary-light);
-  --el-color-primary-light-5: #FFB599;
-  --el-color-primary-light-7: #FFDACC;
-  --el-color-primary-light-8: #FFE8E0;
-  --el-color-primary-light-9: #FFF4F0;
+  --el-color-primary-light-3: #5eb8f3;
+  --el-color-primary-light-5: #8cccf7;
+  --el-color-primary-light-7: #b9defb;
+  --el-color-primary-light-8: #d1e9fc;
+  --el-color-primary-light-9: #e8f4fd;
   --el-color-primary-dark-2: var(--color-primary-dark);
   --el-bg-color: var(--color-bg-primary);
   --el-bg-color-page: var(--color-bg-primary);
   --el-border-color: var(--color-border);
   --el-border-color-light: var(--color-border-light);
+  --el-text-color-primary: var(--color-text-primary);
+  --el-text-color-regular: var(--color-text-secondary);
+  --el-text-color-secondary: var(--color-text-muted);
+  --el-fill-color-light: var(--color-bg-tertiary);
 }

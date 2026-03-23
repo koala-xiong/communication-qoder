@@ -26,8 +26,8 @@ const form = reactive({
 
 const rules: FormRules = {
   title: [
-    { required: true, message: 'Title is required', trigger: 'blur' },
-    { max: 200, message: 'Title must be less than 200 characters', trigger: 'blur' }
+    { required: true, message: '请输入标题', trigger: 'blur' },
+    { max: 200, message: '标题不能超过 200 个字符', trigger: 'blur' }
   ]
 }
 
@@ -35,7 +35,7 @@ onMounted(async () => {
   const content = await contentStore.fetchContentById(contentId.value)
   if (content) {
     if (content.author.username !== authStore.user?.username) {
-      ElMessage.error('You can only edit your own content')
+      ElMessage.error('只能编辑自己的内容')
       router.push(`/content/${contentId.value}`)
       return
     }
@@ -81,8 +81,8 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
   <div class="edit-content-page">
     <div class="container">
       <div class="page-header">
-        <h1>Edit Content</h1>
-        <p>Update your content</p>
+        <h1>编辑内容</h1>
+        <p>修改并保存你的内容</p>
       </div>
 
       <div class="loading-state" v-if="contentStore.loading && !form.title">
@@ -97,17 +97,17 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
           label-position="top"
           @submit.prevent="handleSubmit(formRef)"
         >
-          <el-form-item label="Title" prop="title">
+          <el-form-item label="标题" prop="title">
             <el-input
               v-model="form.title"
-              placeholder="Enter a catchy title..."
+              placeholder="输入标题..."
               size="large"
               maxlength="200"
               show-word-limit
             />
           </el-form-item>
 
-          <el-form-item label="Media">
+          <el-form-item label="媒体">
             <MediaUploader
               :model-value="form.mediaUrl"
               :media-type="form.mediaType"
@@ -116,33 +116,33 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
             />
           </el-form-item>
 
-          <el-form-item label="Content">
+          <el-form-item label="正文">
             <el-input
               v-model="form.body"
               type="textarea"
-              placeholder="Write your content here..."
+              placeholder="写下正文..."
               :rows="8"
               maxlength="10000"
               show-word-limit
             />
           </el-form-item>
 
-          <el-form-item label="Status">
+          <el-form-item label="状态">
             <el-radio-group v-model="form.status">
-              <el-radio value="PUBLISHED">Published</el-radio>
-              <el-radio value="DRAFT">Draft</el-radio>
+              <el-radio value="PUBLISHED">已发布</el-radio>
+              <el-radio value="DRAFT">草稿</el-radio>
             </el-radio-group>
           </el-form-item>
 
           <el-form-item>
             <div class="form-actions">
-              <el-button @click="router.back()">Cancel</el-button>
+              <el-button @click="router.back()">取消</el-button>
               <el-button
                 type="primary"
                 native-type="submit"
                 :loading="contentStore.loading"
               >
-                Save Changes
+                保存修改
               </el-button>
             </div>
           </el-form-item>

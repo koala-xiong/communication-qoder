@@ -1,54 +1,109 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useContentStore } from '@/stores/content'
 import ContentCard from './ContentCard.vue'
+import type { Content } from '@/api/content'
+
+const props = defineProps<{
+  /** 传入时由父组件提供数据（如个人主页「Ta 的作品」），不再使用首页全局 feed */
+  contents?: Content[]
+  loading?: boolean
+  isLast?: boolean
+}>()
+
+const emit = defineEmits<{
+  'load-more': []
+}>()
 
 const contentStore = useContentStore()
 const loadingMore = ref(false)
 
+/** 未传 contents 时为首页 Latest Content */
+const useStoreFeed = computed(() => props.contents === undefined)
+
+const displayContents = computed(() =>
+  useStoreFeed.value ? contentStore.contents : props.contents!
+)
+
+const displayLoading = computed(() =>
+  useStoreFeed.value ? contentStore.loading : (props.loading ?? false)
+)
+
+const showLoadMore = computed(() => {
+  if (useStoreFeed.value) {
+    return contentStore.pagination.hasMore && contentStore.contents.length > 0
+  }
+  if (props.loading) return false
+  return props.isLast === false
+})
+
+const showEndMessage = computed(() => {
+  if (useStoreFeed.value) {
+    return (
+      contentStore.contents.length > 0 && !contentStore.pagination.hasMore
+    )
+  }
+  return props.isLast === true && (props.contents?.length ?? 0) > 0
+})
+
 onMounted(async () => {
-  await contentStore.fetchContents()
+  if (useStoreFeed.value) {
+    await contentStore.fetchContents()
+  }
 })
 
 const handleLoadMore = async () => {
-  if (loadingMore.value || !contentStore.pagination.hasMore) return
-  loadingMore.value = true
-  await contentStore.loadMore()
-  loadingMore.value = false
+  if (useStoreFeed.value) {
+    if (loadingMore.value || !contentStore.pagination.hasMore) return
+    loadingMore.value = true
+    await contentStore.loadMore()
+    loadingMore.value = false
+  } else {
+    emit('load-more')
+  }
 }
 </script>
 
 <template>
   <div class="content-feed">
-    <div class="feed-grid" v-if="contentStore.contents.length > 0">
+    <div class="feed-grid" v-if="displayContents.length > 0">
       <ContentCard
-        v-for="content in contentStore.contents"
+        v-for="content in displayContents"
         :key="content.id"
         :content="content"
       />
     </div>
 
-    <div class="empty-state" v-else-if="!contentStore.loading">
-      <el-empty description="No content yet. Be the first to share!" />
+    <div class="empty-state" v-else-if="!displayLoading">
+      <el-empty
+        :description="
+          useStoreFeed
+            ? '暂无内容，快来发布第一条吧'
+            : '暂无作品'
+        "
+      />
     </div>
 
-    <div class="loading-state" v-if="contentStore.loading && contentStore.contents.length === 0">
+    <div
+      class="loading-state"
+      v-if="displayLoading && displayContents.length === 0"
+    >
       <el-skeleton :rows="3" animated />
       <el-skeleton :rows="3" animated />
       <el-skeleton :rows="3" animated />
     </div>
 
-    <div class="load-more" v-if="contentStore.pagination.hasMore && contentStore.contents.length > 0">
+    <div class="load-more" v-if="showLoadMore">
       <el-button
-        :loading="loadingMore"
+        :loading="useStoreFeed ? loadingMore : loading"
         @click="handleLoadMore"
       >
-        Load More
+        加载更多
       </el-button>
     </div>
 
-    <div class="end-message" v-else-if="contentStore.contents.length > 0">
-      <span>You've reached the end</span>
+    <div class="end-message" v-else-if="showEndMessage">
+      <span>已经到底啦</span>
     </div>
   </div>
 </template>

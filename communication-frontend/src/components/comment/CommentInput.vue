@@ -78,6 +78,6 @@ defineExpose({
 
 :deep(.el-textarea__inner:focus) {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+  box-shadow: 0 0 0 2px rgba(29, 155, 240, 0.12);
 }
 </style>

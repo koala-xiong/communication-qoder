@@ -247,7 +247,8 @@ onMounted(() => {
 
 .search-header :deep(.el-input__wrapper) {
   border-radius: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .popular-tags {
@@ -300,15 +301,16 @@ onMounted(() => {
 }
 
 .user-card {
-  background: white;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
   transition: box-shadow 0.2s;
 }
 
 .user-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .user-link {

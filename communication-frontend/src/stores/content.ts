@@ -61,10 +61,10 @@ export const useContentStore = defineStore('content', () => {
       const response = await contentApi.createContent(data)
       const newContent = response.data.data
       contents.value = [newContent, ...contents.value]
-      ElMessage.success('Content created successfully!')
+      ElMessage.success('发布成功')
       return newContent
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to create content'
+      const message = error.response?.data?.message || '发布失败'
       ElMessage.error(message)
       return null
     } finally {
@@ -86,10 +86,10 @@ export const useContentStore = defineStore('content', () => {
         currentContent.value = updatedContent
       }
 
-      ElMessage.success('Content updated successfully!')
+      ElMessage.success('保存成功')
       return updatedContent
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to update content'
+      const message = error.response?.data?.message || '保存失败'
       ElMessage.error(message)
       return null
     } finally {
@@ -105,10 +105,10 @@ export const useContentStore = defineStore('content', () => {
       if (currentContent.value?.id === id) {
         currentContent.value = null
       }
-      ElMessage.success('Content deleted successfully!')
+      ElMessage.success('删除成功')
       return true
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Failed to delete content'
+      const message = error.response?.data?.message || '删除失败'
       ElMessage.error(message)
       return false
     } finally {

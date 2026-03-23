@@ -30,32 +30,36 @@ http.interceptors.response.use(
     return response
   },
   (error) => {
-    const { response } = error
+    const { response, config } = error
     
     if (response) {
       const { status, data } = response
+      const isLoginRequest = config?.url?.includes('/auth/login')
       
       switch (status) {
         case 401:
+          if (isLoginRequest) {
+            return Promise.reject(error)
+          }
           localStorage.removeItem('token')
           localStorage.removeItem('user')
           window.location.href = '/login'
-          ElMessage.error('Session expired. Please login again.')
+          ElMessage.error('登录已过期，请重新登录')
           break
         case 403:
-          ElMessage.error('You do not have permission to perform this action.')
+          ElMessage.error('没有权限执行此操作')
           break
         case 404:
-          ElMessage.error(data?.message || 'Resource not found.')
+          ElMessage.error(data?.message || '资源不存在')
           break
         case 500:
-          ElMessage.error('Server error. Please try again later.')
+          ElMessage.error('服务器错误，请稍后重试')
           break
         default:
-          ElMessage.error(data?.message || 'An error occurred.')
+          ElMessage.error(data?.message || '请求失败')
       }
     } else {
-      ElMessage.error('Network error. Please check your connection.')
+      ElMessage.error('网络异常，请检查连接')
     }
     
     return Promise.reject(error)

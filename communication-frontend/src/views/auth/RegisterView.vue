@@ -17,7 +17,7 @@ const form = reactive({
 
 const validateConfirmPassword = (_rule: any, value: string, callback: any) => {
   if (value !== form.password) {
-    callback(new Error('Passwords do not match'))
+    callback(new Error('两次输入的密码不一致'))
   } else {
     callback()
   }
@@ -25,19 +25,19 @@ const validateConfirmPassword = (_rule: any, value: string, callback: any) => {
 
 const rules: FormRules = {
   username: [
-    { required: true, message: 'Please enter username', trigger: 'blur' },
-    { min: 3, max: 50, message: 'Username must be 3-50 characters', trigger: 'blur' }
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 50, message: '用户名为 3～50 个字符', trigger: 'blur' }
   ],
   email: [
-    { required: true, message: 'Please enter email', trigger: 'blur' },
-    { type: 'email', message: 'Please enter a valid email', trigger: 'blur' }
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: 'Please enter password', trigger: 'blur' },
-    { min: 6, message: 'Password must be at least 6 characters', trigger: 'blur' }
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码至少 6 个字符', trigger: 'blur' }
   ],
   confirmPassword: [
-    { required: true, message: 'Please confirm password', trigger: 'blur' },
+    { required: true, message: '请再次输入密码', trigger: 'blur' },
     { validator: validateConfirmPassword, trigger: 'blur' }
   ]
 }
@@ -63,8 +63,8 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
 <template>
   <div class="register-page">
     <div class="form-card">
-      <h1 class="form-title">Create Account</h1>
-      <p class="form-subtitle">Join Communication today</p>
+      <h1 class="form-title">创建账号</h1>
+      <p class="form-subtitle">加入 Communication</p>
 
       <el-form
         ref="formRef"
@@ -73,37 +73,37 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
         label-position="top"
         @submit.prevent="handleSubmit(formRef)"
       >
-        <el-form-item label="Username" prop="username">
+        <el-form-item label="用户名" prop="username">
           <el-input
             v-model="form.username"
-            placeholder="Choose a username"
+            placeholder="设置用户名"
             size="large"
           />
         </el-form-item>
 
-        <el-form-item label="Email" prop="email">
+        <el-form-item label="邮箱" prop="email">
           <el-input
             v-model="form.email"
-            placeholder="Enter your email"
+            placeholder="请输入邮箱"
             size="large"
           />
         </el-form-item>
 
-        <el-form-item label="Password" prop="password">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="form.password"
             type="password"
-            placeholder="Create a password"
+            placeholder="设置密码"
             size="large"
             show-password
           />
         </el-form-item>
 
-        <el-form-item label="Confirm Password" prop="confirmPassword">
+        <el-form-item label="确认密码" prop="confirmPassword">
           <el-input
             v-model="form.confirmPassword"
             type="password"
-            placeholder="Confirm your password"
+            placeholder="请再次输入密码"
             size="large"
             show-password
           />
@@ -117,14 +117,14 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
             :loading="authStore.loading"
             style="width: 100%"
           >
-            Create Account
+            注册
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="form-footer">
-        <span>Already have an account?</span>
-        <router-link to="/login">Sign in</router-link>
+        <span>已有账号？</span>
+        <router-link to="/login">去登录</router-link>
       </div>
     </div>
   </div>

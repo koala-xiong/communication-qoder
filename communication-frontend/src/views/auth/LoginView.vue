@@ -16,10 +16,10 @@ const form = reactive({
 
 const rules: FormRules = {
   usernameOrEmail: [
-    { required: true, message: 'Please enter username or email', trigger: 'blur' }
+    { required: true, message: '请输入用户名或邮箱', trigger: 'blur' }
   ],
   password: [
-    { required: true, message: 'Please enter password', trigger: 'blur' }
+    { required: true, message: '请输入密码', trigger: 'blur' }
   ]
 }
 
@@ -41,8 +41,8 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
 <template>
   <div class="login-page">
     <div class="form-card">
-      <h1 class="form-title">Welcome Back</h1>
-      <p class="form-subtitle">Sign in to continue to Communication</p>
+      <h1 class="form-title">欢迎回来</h1>
+      <p class="form-subtitle">登录以继续使用 Communication</p>
 
       <el-form
         ref="formRef"
@@ -51,19 +51,19 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
         label-position="top"
         @submit.prevent="handleSubmit(formRef)"
       >
-        <el-form-item label="Username or Email" prop="usernameOrEmail">
+        <el-form-item label="用户名或邮箱" prop="usernameOrEmail">
           <el-input
             v-model="form.usernameOrEmail"
-            placeholder="Enter your username or email"
+            placeholder="请输入用户名或邮箱"
             size="large"
           />
         </el-form-item>
 
-        <el-form-item label="Password" prop="password">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="form.password"
             type="password"
-            placeholder="Enter your password"
+            placeholder="请输入密码"
             size="large"
             show-password
           />
@@ -77,14 +77,14 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
             :loading="authStore.loading"
             style="width: 100%"
           >
-            Sign In
+            登录
           </el-button>
         </el-form-item>
       </el-form>
 
       <div class="form-footer">
-        <span>Don't have an account?</span>
-        <router-link to="/register">Sign up</router-link>
+        <span>还没有账号？</span>
+        <router-link to="/register">去注册</router-link>
       </div>
     </div>
   </div>

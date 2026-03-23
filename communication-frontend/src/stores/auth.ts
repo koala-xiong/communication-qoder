@@ -22,10 +22,10 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', authData.token)
       localStorage.setItem('user', JSON.stringify(authData.user))
 
-      ElMessage.success('Registration successful!')
+      ElMessage.success('注册成功')
       return true
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Registration failed'
+      const message = error.response?.data?.message || '注册失败'
       ElMessage.error(message)
       return false
     } finally {
@@ -45,10 +45,10 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', authData.token)
       localStorage.setItem('user', JSON.stringify(authData.user))
 
-      ElMessage.success('Login successful!')
+      ElMessage.success('登录成功')
       return true
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed'
+      const message = error.response?.data?.message || '登录失败'
       ElMessage.error(message)
       return false
     } finally {
@@ -73,7 +73,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    ElMessage.success('Logged out successfully')
+    ElMessage.success('已退出登录')
   }
 
   function updateUser(newUser: User): void {

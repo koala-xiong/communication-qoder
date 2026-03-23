@@ -1,4 +1,5 @@
 import http from './http'
+import type { ApiResponse } from './auth'
 
 export interface Author {
   id: number
@@ -34,13 +35,13 @@ export interface PageResponse<T> {
 
 export const commentApi = {
   getComments(contentId: number, page = 0, size = 20) {
-    return http.get<PageResponse<Comment>>(`/contents/${contentId}/comments`, {
+    return http.get<ApiResponse<PageResponse<Comment>>>(`/contents/${contentId}/comments`, {
       params: { page, size }
     })
   },
 
   createComment(contentId: number, data: CreateCommentRequest) {
-    return http.post<Comment>(`/contents/${contentId}/comments`, data)
+    return http.post<ApiResponse<Comment>>(`/contents/${contentId}/comments`, data)
   },
 
   deleteComment(contentId: number, commentId: number) {

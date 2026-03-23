@@ -117,7 +117,8 @@ const subscriptionCount = ref(0)
 const contents = ref<Content[]>([])
 const contentsLoading = ref(false)
 const contentPage = ref(0)
-const isLast = ref(false)
+/** 首屏加载完成前为 true，避免 ContentFeed 误显示「加载更多」 */
+const isLast = ref(true)
 const contentCount = ref(0)
 
 // 粉丝列表
@@ -171,18 +172,23 @@ const fetchContents = async (reset = false) => {
   if (reset) {
     contentPage.value = 0
     contents.value = []
+    isLast.value = true
   }
   
   contentsLoading.value = true
   try {
-    const res = await contentApi.getContentsByAuthor(user.value.id, contentPage.value)
+    const response = await contentApi.getContentsByAuthor(
+      user.value.id,
+      contentPage.value
+    )
+    const pageData = response.data.data
     if (reset) {
-      contents.value = res.content
+      contents.value = pageData.content
     } else {
-      contents.value.push(...res.content)
+      contents.value.push(...pageData.content)
     }
-    isLast.value = res.last
-    contentCount.value = res.totalElements
+    isLast.value = pageData.last
+    contentCount.value = pageData.totalElements
   } catch (error) {
     ElMessage.error('加载内容失败')
   } finally {
@@ -312,9 +318,10 @@ onMounted(() => {
   display: flex;
   gap: 32px;
   padding: 32px;
-  background: white;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 32px;
 }
 

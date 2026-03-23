@@ -1,0 +1,9 @@
+# 本机连接 docker-compose 中的 MySQL（或同账号的本地实例）
+# 数据库：在项目根目录执行 docker compose up -d mysql
+# 后端：SPRING_PROFILES_ACTIVE=mysql ./mvnw spring-boot:run
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/communication?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${MYSQL_USER:communication}
+    password: ${MYSQL_PASSWORD:comm123}
+    driver-class-name: com.mysql.cj.jdbc.Driver

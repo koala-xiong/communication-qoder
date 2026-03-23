@@ -31,9 +31,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
+        String message = ex.getMessage() != null && !ex.getMessage().isBlank()
+                ? ex.getMessage()
+                : "用户名或密码错误";
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error(401, "Invalid username/email or password"));
+                .body(ApiResponse.error(401, message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

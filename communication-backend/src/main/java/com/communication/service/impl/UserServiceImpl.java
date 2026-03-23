@@ -2,15 +2,14 @@ package com.communication.service.impl;
 
 import com.communication.dto.*;
 import com.communication.entity.User;
-import com.communication.exception.BadRequestException;
 import com.communication.exception.ResourceNotFoundException;
 import com.communication.repository.UserRepository;
+import com.communication.service.UserAccountPersistenceService;
 import com.communication.service.UserService;
 import com.communication.util.JwtUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -18,31 +17,22 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final UserAccountPersistenceService userAccountPersistenceService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public UserServiceImpl(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil,
+            UserAccountPersistenceService userAccountPersistenceService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.userAccountPersistenceService = userAccountPersistenceService;
     }
 
     @Override
-    @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (existsByUsername(request.getUsername())) {
-            throw new BadRequestException("Username already exists");
-        }
-        if (existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
-        }
-
-        User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
-
-        user = userRepository.save(user);
-
+        User user = userAccountPersistenceService.persistNewUser(request);
         String token = jwtUtil.generateToken(user.getUsername());
         return AuthResponse.of(token, UserDto.fromEntity(user));
     }
@@ -51,10 +41,10 @@ public class UserServiceImpl implements UserService {
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsernameOrEmail())
                 .or(() -> userRepository.findByEmail(request.getUsernameOrEmail()))
-                .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
+                .orElseThrow(() -> new BadCredentialsException("用户不存在"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Invalid credentials");
+            throw new BadCredentialsException("密码错误");
         }
 
         String token = jwtUtil.generateToken(user.getUsername());

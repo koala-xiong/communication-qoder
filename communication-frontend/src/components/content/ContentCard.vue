@@ -34,6 +34,17 @@ const truncatedBody = computed(() => {
     : props.content.body
 })
 
+const mediaTypeLabel = computed(() => {
+  switch (props.content.mediaType) {
+    case 'IMAGE':
+      return '图片'
+    case 'VIDEO':
+      return '视频'
+    default:
+      return '文字'
+  }
+})
+
 const handleClick = () => {
   router.push(`/content/${props.content.id}`)
 }
@@ -69,7 +80,7 @@ const handleTagClick = (e: Event, tag: string) => {
       <div class="card-header">
         <el-tag :type="content.mediaType === 'VIDEO' ? 'danger' : content.mediaType === 'IMAGE' ? 'success' : 'info'" size="small">
           <el-icon><component :is="mediaIcon" /></el-icon>
-          {{ content.mediaType }}
+          {{ mediaTypeLabel }}
         </el-tag>
       </div>
 
@@ -121,6 +132,7 @@ const handleTagClick = (e: Event, tag: string) => {
 <style scoped>
 .content-card {
   background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -129,8 +141,9 @@ const handleTagClick = (e: Event, tag: string) => {
 }
 
 .content-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--el-color-primary-light-8);
 }
 
 .card-media {
