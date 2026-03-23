@@ -78,7 +78,11 @@ const handleTagClick = (e: Event, tag: string) => {
 
     <div class="card-content">
       <div class="card-header">
-        <el-tag :type="content.mediaType === 'VIDEO' ? 'danger' : content.mediaType === 'IMAGE' ? 'success' : 'info'" size="small">
+        <el-tag
+          :type="content.mediaType === 'VIDEO' ? 'danger' : content.mediaType === 'IMAGE' ? 'success' : 'info'"
+          size="small"
+          class="media-type-tag"
+        >
           <el-icon><component :is="mediaIcon" /></el-icon>
           {{ mediaTypeLabel }}
         </el-tag>
@@ -133,7 +137,7 @@ const handleTagClick = (e: Event, tag: string) => {
 .content-card {
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
@@ -141,16 +145,17 @@ const handleTagClick = (e: Event, tag: string) => {
 }
 
 .content-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--el-color-primary-light-8);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: #d2e9fb;
 }
 
 .card-media {
   width: 100%;
-  height: 200px;
+  height: 220px;
   overflow: hidden;
   background: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .media-image,
@@ -161,11 +166,28 @@ const handleTagClick = (e: Event, tag: string) => {
 }
 
 .card-content {
-  padding: 16px;
+  padding: 18px;
 }
 
 .card-header {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+}
+
+.media-type-tag {
+  border-radius: 999px;
+}
+
+:deep(.media-type-tag .el-tag__content) {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+:deep(.media-type-tag .el-icon) {
+  font-size: 13px;
 }
 
 .card-title {
@@ -234,18 +256,32 @@ const handleTagClick = (e: Event, tag: string) => {
 .card-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .tag-item {
   cursor: pointer;
-  transition: all 0.2s;
+  border-radius: 999px;
+  transition: all var(--transition-fast);
 }
 
-.tag-item:hover {
+:deep(.tag-item.el-tag) {
+  border-color: #d2e9fb;
+  background: #eff8ff;
+  color: #1167b1;
+}
+
+:deep(.tag-item .el-tag__content) {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+:deep(.tag-item:hover) {
+  transform: translateY(-1px);
   background: var(--color-primary);
-  color: white;
+  color: #fff;
   border-color: var(--color-primary);
 }
 
