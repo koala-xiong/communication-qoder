@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend: Spring Boot (MySQL)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/start-backend-mysql.sh",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "SPRING_PROFILES_ACTIVE": "mysql"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

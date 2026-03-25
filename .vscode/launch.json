@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Communication Backend (MySQL)",
+      "request": "launch",
+      "mainClass": "com.communication.CommunicationApplication",
+      "projectName": "communication-backend",
+      "cwd": "${workspaceFolder}/communication-backend",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "mysql"
+      }
+    }
+  ]
+}

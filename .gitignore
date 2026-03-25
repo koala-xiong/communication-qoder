@@ -14,10 +14,14 @@ communication-frontend/test-results/
 communication-frontend/src/auto-imports.d.ts
 communication-frontend/src/components.d.ts
 
-# IDE
-.idea/
+# IDE（保留共享的运行配置，其余仍忽略）
+.idea/*
+!.idea/runConfigurations/
+!.idea/runConfigurations/**
 *.iml
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
 *.swp
 *.swo
 

@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Communication Backend (MySQL)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="communication-backend.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.communication.CommunicationApplication" />
+    <option name="ACTIVE_PROFILES" value="mysql" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
