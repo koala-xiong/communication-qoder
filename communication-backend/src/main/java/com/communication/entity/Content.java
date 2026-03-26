@@ -39,9 +39,16 @@ public class Content {
     @Column(name = "comment_count")
     private Integer commentCount = 0;
 
+    @Column(name = "like_count")
+    private Integer likeCount = 0;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ContentStatus status = ContentStatus.PUBLISHED;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ContentTag> tags = new ArrayList<>();
@@ -57,7 +64,8 @@ public class Content {
     public Content() {}
 
     public Content(Long id, User author, String title, String body, String mediaUrl, MediaType mediaType, 
-                   Integer viewCount, Integer commentCount, ContentStatus status, List<ContentTag> tags,
+                   Integer viewCount, Integer commentCount, Integer likeCount, ContentStatus status,
+                   Category category, List<ContentTag> tags,
                    LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.author = author;
@@ -67,7 +75,9 @@ public class Content {
         this.mediaType = mediaType != null ? mediaType : MediaType.TEXT;
         this.viewCount = viewCount != null ? viewCount : 0;
         this.commentCount = commentCount != null ? commentCount : 0;
+        this.likeCount = likeCount != null ? likeCount : 0;
         this.status = status != null ? status : ContentStatus.PUBLISHED;
+        this.category = category;
         this.tags = tags != null ? tags : new ArrayList<>();
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -89,8 +99,12 @@ public class Content {
     public void setViewCount(Integer viewCount) { this.viewCount = viewCount; }
     public Integer getCommentCount() { return commentCount; }
     public void setCommentCount(Integer commentCount) { this.commentCount = commentCount; }
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
     public ContentStatus getStatus() { return status; }
     public void setStatus(ContentStatus status) { this.status = status; }
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
     public List<ContentTag> getTags() { return tags; }
     public void setTags(List<ContentTag> tags) { this.tags = tags; }
     public LocalDateTime getCreatedAt() { return createdAt; }
@@ -109,7 +123,9 @@ public class Content {
         private MediaType mediaType = MediaType.TEXT;
         private Integer viewCount = 0;
         private Integer commentCount = 0;
+        private Integer likeCount = 0;
         private ContentStatus status = ContentStatus.PUBLISHED;
+        private Category category;
         private List<ContentTag> tags = new ArrayList<>();
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -122,13 +138,15 @@ public class Content {
         public ContentBuilder mediaType(MediaType mediaType) { this.mediaType = mediaType; return this; }
         public ContentBuilder viewCount(Integer viewCount) { this.viewCount = viewCount; return this; }
         public ContentBuilder commentCount(Integer commentCount) { this.commentCount = commentCount; return this; }
+        public ContentBuilder likeCount(Integer likeCount) { this.likeCount = likeCount; return this; }
         public ContentBuilder status(ContentStatus status) { this.status = status; return this; }
+        public ContentBuilder category(Category category) { this.category = category; return this; }
         public ContentBuilder tags(List<ContentTag> tags) { this.tags = tags; return this; }
         public ContentBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public ContentBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
 
         public Content build() {
-            return new Content(id, author, title, body, mediaUrl, mediaType, viewCount, commentCount, status, tags, createdAt, updatedAt);
+            return new Content(id, author, title, body, mediaUrl, mediaType, viewCount, commentCount, likeCount, status, category, tags, createdAt, updatedAt);
         }
     }
 }

@@ -7,6 +7,8 @@ import com.communication.entity.ContentTag;
 import com.communication.entity.User;
 import com.communication.exception.BadRequestException;
 import com.communication.exception.ResourceNotFoundException;
+import com.communication.entity.Category;
+import com.communication.repository.CategoryRepository;
 import com.communication.repository.ContentRepository;
 import com.communication.repository.ContentTagRepository;
 import com.communication.service.ContentService;
@@ -25,11 +27,14 @@ public class ContentServiceImpl implements ContentService {
 
     private final ContentRepository contentRepository;
     private final ContentTagRepository contentTagRepository;
+    private final CategoryRepository categoryRepository;
     private final UserService userService;
 
-    public ContentServiceImpl(ContentRepository contentRepository, ContentTagRepository contentTagRepository, UserService userService) {
+    public ContentServiceImpl(ContentRepository contentRepository, ContentTagRepository contentTagRepository,
+                              CategoryRepository categoryRepository, UserService userService) {
         this.contentRepository = contentRepository;
         this.contentTagRepository = contentTagRepository;
+        this.categoryRepository = categoryRepository;
         this.userService = userService;
     }
 
@@ -46,6 +51,12 @@ public class ContentServiceImpl implements ContentService {
                 .mediaType(request.getMediaType())
                 .status(request.getStatus())
                 .build();
+
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("分类不存在"));
+            content.setCategory(category);
+        }
 
         content = contentRepository.save(content);
 
@@ -89,6 +100,13 @@ public class ContentServiceImpl implements ContentService {
         }
         if (request.getStatus() != null) {
             content.setStatus(request.getStatus());
+        }
+        if (Boolean.TRUE.equals(request.getClearCategory())) {
+            content.setCategory(null);
+        } else if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("分类不存在"));
+            content.setCategory(category);
         }
 
         // 更新标签

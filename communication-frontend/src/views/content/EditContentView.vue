@@ -3,7 +3,8 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useContentStore } from '@/stores/content'
 import { useAuthStore } from '@/stores/auth'
-import type { MediaType, ContentStatus } from '@/api/content'
+import type { MediaType, ContentStatus, UpdateContentRequest } from '@/api/content'
+import { categoryApi, type Category } from '@/api/category'
 import MediaUploader from '@/components/content/MediaUploader.vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
@@ -16,12 +17,16 @@ const authStore = useAuthStore()
 const contentId = computed(() => Number(route.params.id))
 
 const formRef = ref<FormInstance>()
+const categories = ref<Category[]>([])
+const originalCategoryId = ref<number | undefined>(undefined)
+
 const form = reactive({
   title: '',
   body: '',
   mediaUrl: '',
   mediaType: 'TEXT' as MediaType,
-  status: 'PUBLISHED' as ContentStatus
+  status: 'PUBLISHED' as ContentStatus,
+  categoryId: undefined as number | undefined
 })
 
 const rules: FormRules = {
@@ -32,6 +37,13 @@ const rules: FormRules = {
 }
 
 onMounted(async () => {
+  try {
+    const cr = await categoryApi.list()
+    categories.value = cr.data.data
+  } catch {
+    categories.value = []
+  }
+
   const content = await contentStore.fetchContentById(contentId.value)
   if (content) {
     if (content.author.username !== authStore.user?.username) {
@@ -45,6 +57,8 @@ onMounted(async () => {
     form.mediaUrl = content.mediaUrl || ''
     form.mediaType = content.mediaType
     form.status = content.status
+    form.categoryId = content.categoryId ?? undefined
+    originalCategoryId.value = content.categoryId ?? undefined
   }
 })
 
@@ -61,13 +75,20 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
 
   await formEl.validate(async (valid) => {
     if (valid) {
-      const content = await contentStore.updateContent(contentId.value, {
+      const payload: UpdateContentRequest = {
         title: form.title,
         body: form.body || undefined,
         mediaUrl: form.mediaUrl || undefined,
         mediaType: form.mediaType,
         status: form.status
-      })
+      }
+      if (form.categoryId != null) {
+        payload.categoryId = form.categoryId
+      } else if (originalCategoryId.value != null) {
+        payload.clearCategory = true
+      }
+
+      const content = await contentStore.updateContent(contentId.value, payload)
 
       if (content) {
         router.push(`/content/${content.id}`)
@@ -97,6 +118,22 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
           label-position="top"
           @submit.prevent="handleSubmit(formRef)"
         >
+          <el-form-item label="频道（可选）">
+            <el-select
+              v-model="form.categoryId"
+              placeholder="选择频道"
+              clearable
+              style="width: 100%"
+            >
+              <el-option
+                v-for="c in categories"
+                :key="c.id"
+                :label="c.name"
+                :value="c.id"
+              />
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="标题" prop="title">
             <el-input
               v-model="form.title"

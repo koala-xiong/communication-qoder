@@ -76,6 +76,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/subscriptions/followers/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/subscriptions/count/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/trending/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/badges/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()

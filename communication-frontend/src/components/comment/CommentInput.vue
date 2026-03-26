@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   placeholder?: string
   submitText?: string
   showCancel?: boolean

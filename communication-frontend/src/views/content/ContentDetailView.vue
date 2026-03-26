@@ -3,9 +3,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useContentStore } from '@/stores/content'
 import { useAuthStore } from '@/stores/auth'
-import { View, Edit, Delete, ChatLineRound } from '@element-plus/icons-vue'
+import { View, Edit, Delete, ChatLineRound, StarFilled, Pointer } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 import CommentList from '@/components/comment/CommentList.vue'
+import { likeApi } from '@/api/like'
+import { favoriteApi } from '@/api/favorite'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,8 +16,23 @@ const authStore = useAuthStore()
 
 const contentId = computed(() => Number(route.params.id))
 
+const liked = ref(false)
+const favorited = ref(false)
+
 onMounted(async () => {
   await contentStore.fetchContentById(contentId.value)
+  if (authStore.isAuthenticated && contentStore.currentContent) {
+    try {
+      const [lr, fr] = await Promise.all([
+        likeApi.check(contentId.value),
+        favoriteApi.check(contentId.value)
+      ])
+      liked.value = !!lr.data.data
+      favorited.value = !!fr.data.data
+    } catch {
+      /* ignore */
+    }
+  }
 })
 
 const content = computed(() => contentStore.currentContent)
@@ -66,6 +83,33 @@ const goToAuthorProfile = () => {
     router.push(`/profile/${content.value.author.username}`)
   }
 }
+
+const toggleLike = async () => {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+    return
+  }
+  const res = await likeApi.toggle(contentId.value)
+  const next = res.data.data.liked
+  const c = content.value
+  if (c && liked.value !== next) {
+    const delta = next ? 1 : -1
+    contentStore.currentContent = {
+      ...c,
+      likeCount: Math.max(0, (c.likeCount ?? 0) + delta)
+    }
+  }
+  liked.value = next
+}
+
+const toggleFavorite = async () => {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } })
+    return
+  }
+  const res = await favoriteApi.toggle(contentId.value)
+  favorited.value = res.data.data.favorited
+}
 </script>
 
 <template>
@@ -91,6 +135,17 @@ const goToAuthorProfile = () => {
             </div>
 
             <div class="content-stats">
+              <el-tag v-if="content.categoryName" size="small" type="warning" round effect="light">
+                {{ content.categoryName }}
+              </el-tag>
+              <el-button text @click="toggleLike" :type="liked ? 'warning' : 'default'">
+                <el-icon><Pointer /></el-icon>
+                {{ content.likeCount ?? 0 }} 赞
+              </el-button>
+              <el-button text @click="toggleFavorite" :type="favorited ? 'danger' : 'default'">
+                <el-icon><StarFilled /></el-icon>
+                {{ favorited ? '已收藏' : '收藏' }}
+              </el-button>
               <span class="view-count">
                 <el-icon><View /></el-icon>
                 {{ content.viewCount }} 次浏览

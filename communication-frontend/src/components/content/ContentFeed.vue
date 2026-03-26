@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useContentStore } from '@/stores/content'
+import { useAuthStore } from '@/stores/auth'
 import ContentCard from './ContentCard.vue'
 import type { Content } from '@/api/content'
+import { likeApi } from '@/api/like'
+import { favoriteApi } from '@/api/favorite'
 
 const props = defineProps<{
   /** 传入时由父组件提供数据（如个人主页「Ta 的作品」），不再使用首页全局 feed */
@@ -16,6 +19,7 @@ const emit = defineEmits<{
 }>()
 
 const contentStore = useContentStore()
+const authStore = useAuthStore()
 const loadingMore = ref(false)
 
 /** 未传 contents 时为首页 Latest Content */
@@ -24,6 +28,64 @@ const useStoreFeed = computed(() => props.contents === undefined)
 const displayContents = computed(() =>
   useStoreFeed.value ? contentStore.contents : props.contents!
 )
+
+const likeMap = ref<Record<number, boolean>>({})
+const favMap = ref<Record<number, boolean>>({})
+
+async function syncInteractionMaps() {
+  if (!authStore.isAuthenticated || displayContents.value.length === 0) {
+    likeMap.value = {}
+    favMap.value = {}
+    return
+  }
+  const ids = displayContents.value.map((c) => c.id)
+  try {
+    const [lr, fr] = await Promise.all([
+      likeApi.batchCheck(ids),
+      favoriteApi.batchCheck(ids)
+    ])
+    const lm: Record<number, boolean> = {}
+    Object.entries(lr.data.data ?? {}).forEach(([k, v]) => {
+      lm[Number(k)] = !!v
+    })
+    const fm: Record<number, boolean> = {}
+    Object.entries(fr.data.data ?? {}).forEach(([k, v]) => {
+      fm[Number(k)] = !!v
+    })
+    likeMap.value = lm
+    favMap.value = fm
+  } catch {
+    likeMap.value = {}
+    favMap.value = {}
+  }
+}
+
+function patchContentLikeCount(contentId: number, delta: number) {
+  if (useStoreFeed.value) {
+    const list = contentStore.contents
+    const i = list.findIndex((c) => c.id === contentId)
+    if (i !== -1) {
+      const c = list[i]!
+      const next = (c.likeCount ?? 0) + delta
+      list[i] = { ...c, likeCount: Math.max(0, next) }
+    }
+  }
+}
+
+async function handleToggleLike(contentId: number) {
+  const was = likeMap.value[contentId]
+  const res = await likeApi.toggle(contentId)
+  const liked = res.data.data.liked
+  likeMap.value = { ...likeMap.value, [contentId]: liked }
+  if (was !== liked) {
+    patchContentLikeCount(contentId, liked ? 1 : -1)
+  }
+}
+
+async function handleToggleFavorite(contentId: number) {
+  const res = await favoriteApi.toggle(contentId)
+  favMap.value = { ...favMap.value, [contentId]: res.data.data.favorited }
+}
 
 const displayLoading = computed(() =>
   useStoreFeed.value ? contentStore.loading : (props.loading ?? false)
@@ -50,7 +112,16 @@ onMounted(async () => {
   if (useStoreFeed.value) {
     await contentStore.fetchContents()
   }
+  await syncInteractionMaps()
 })
+
+watch(
+  () => [displayContents.value, authStore.isAuthenticated] as const,
+  () => {
+    syncInteractionMaps()
+  },
+  { deep: true }
+)
 
 const handleLoadMore = async () => {
   if (useStoreFeed.value) {
@@ -71,6 +142,11 @@ const handleLoadMore = async () => {
         v-for="content in displayContents"
         :key="content.id"
         :content="content"
+        :liked="authStore.isAuthenticated ? !!likeMap[content.id] : false"
+        :favorited="authStore.isAuthenticated ? !!favMap[content.id] : false"
+        :interactive="authStore.isAuthenticated"
+        @toggle-like="handleToggleLike"
+        @toggle-favorite="handleToggleFavorite"
       />
     </div>
 

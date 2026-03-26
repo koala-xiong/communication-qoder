@@ -1,10 +1,23 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import ContentFeed from '@/components/content/ContentFeed.vue'
+import { categoryApi, type Category } from '@/api/category'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+const categories = ref<Category[]>([])
+
+onMounted(async () => {
+  try {
+    const res = await categoryApi.list()
+    categories.value = res.data.data
+  } catch {
+    categories.value = []
+  }
+})
 </script>
 
 <template>
@@ -21,6 +34,21 @@ const authStore = useAuthStore()
           </router-link>
           <router-link to="/login">
             <el-button size="large">登录</el-button>
+          </router-link>
+        </div>
+      </div>
+
+      <div class="discover-bar" v-if="categories.length">
+        <router-link to="/trending" class="trending-link">热门排行 →</router-link>
+        <div class="category-strip">
+          <span class="strip-label">频道</span>
+          <router-link
+            v-for="c in categories"
+            :key="c.id"
+            :to="`/category/${c.id}`"
+            class="cat-chip"
+          >
+            {{ c.name }}
           </router-link>
         </div>
       </div>
@@ -92,5 +120,52 @@ const authStore = useAuthStore()
   font-size: 24px;
   font-weight: 600;
   color: var(--color-text-primary);
+}
+
+.discover-bar {
+  margin-bottom: 28px;
+  padding: 16px 18px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.trending-link {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+
+.category-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.strip-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-right: 4px;
+}
+
+.cat-chip {
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eff8ff;
+  color: #1167b1;
+  text-decoration: none;
+  border: 1px solid #d2e9fb;
+  transition: all var(--transition-fast);
+}
+
+.cat-chip:hover {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
 }
 </style>

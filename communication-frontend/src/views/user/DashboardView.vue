@@ -117,7 +117,7 @@
       <el-tab-pane label="个人资料" name="profile">
         <div class="profile-form">
           <div class="avatar-section">
-            <el-avatar :size="100" :src="authStore.user?.avatarUrl">
+            <el-avatar :size="100" :src="authStore.user?.avatarUrl || undefined">
               {{ authStore.user?.username?.charAt(0).toUpperCase() }}
             </el-avatar>
             <div class="avatar-upload">

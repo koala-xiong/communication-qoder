@@ -21,6 +21,8 @@ public class CreateContentRequest {
 
     private ContentStatus status = ContentStatus.PUBLISHED;
 
+    private Long categoryId;
+
     @Size(max = 10, message = "最多添加10个标签")
     private List<String> tags;
 
@@ -36,6 +38,8 @@ public class CreateContentRequest {
     public void setMediaType(MediaType mediaType) { this.mediaType = mediaType; }
     public ContentStatus getStatus() { return status; }
     public void setStatus(ContentStatus status) { this.status = status; }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
     public List<String> getTags() { return tags; }
     public void setTags(List<String> tags) { this.tags = tags; }
 }

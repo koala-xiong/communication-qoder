@@ -20,7 +20,10 @@ export interface Content {
   mediaType: MediaType
   viewCount: number
   commentCount: number
+  likeCount: number
   status: ContentStatus
+  categoryId?: number | null
+  categoryName?: string | null
   tags?: string[]
   createdAt: string
   updatedAt: string
@@ -43,6 +46,7 @@ export interface CreateContentRequest {
   mediaUrl?: string
   mediaType?: MediaType
   status?: ContentStatus
+  categoryId?: number | null
   tags?: string[]
 }
 
@@ -52,6 +56,8 @@ export interface UpdateContentRequest {
   mediaUrl?: string
   mediaType?: MediaType
   status?: ContentStatus
+  categoryId?: number | null
+  clearCategory?: boolean
   tags?: string[]
 }
 

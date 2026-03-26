@@ -2,10 +2,26 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Content } from '@/api/content'
-import { View, VideoPlay, Picture, Document, ChatLineRound } from '@element-plus/icons-vue'
+import {
+  View,
+  VideoPlay,
+  Picture,
+  Document,
+  ChatLineRound,
+  StarFilled,
+  Pointer
+} from '@element-plus/icons-vue'
 
 const props = defineProps<{
   content: Content
+  liked?: boolean
+  favorited?: boolean
+  interactive?: boolean
+}>()
+
+const emit = defineEmits<{
+  'toggle-like': [contentId: number]
+  'toggle-favorite': [contentId: number]
 }>()
 
 const router = useRouter()
@@ -58,6 +74,16 @@ const handleTagClick = (e: Event, tag: string) => {
   e.stopPropagation()
   router.push({ path: '/search', query: { tag } })
 }
+
+const handleLikeClick = (e: Event) => {
+  e.stopPropagation()
+  if (props.interactive) emit('toggle-like', props.content.id)
+}
+
+const handleFavoriteClick = (e: Event) => {
+  e.stopPropagation()
+  if (props.interactive) emit('toggle-favorite', props.content.id)
+}
 </script>
 
 <template>
@@ -109,6 +135,10 @@ const handleTagClick = (e: Event, tag: string) => {
         </span>
       </div>
 
+      <div v-if="content.categoryName" class="category-chip">
+        <el-tag size="small" type="warning" effect="light" round>{{ content.categoryName }}</el-tag>
+      </div>
+
       <div class="card-footer">
         <div class="author-info" @click="handleAuthorClick">
           <el-avatar :size="28" :src="content.author.avatarUrl || undefined">
@@ -118,6 +148,29 @@ const handleTagClick = (e: Event, tag: string) => {
         </div>
 
         <div class="card-meta">
+          <span
+            v-if="interactive"
+            class="action-like"
+            :class="{ active: liked }"
+            @click="handleLikeClick"
+            title="点赞"
+          >
+            <el-icon><Pointer /></el-icon>
+            {{ content.likeCount ?? 0 }}
+          </span>
+          <span v-else class="view-count">
+            <el-icon><Pointer /></el-icon>
+            {{ content.likeCount ?? 0 }}
+          </span>
+          <span
+            v-if="interactive"
+            class="action-fav"
+            :class="{ active: favorited }"
+            @click="handleFavoriteClick"
+            title="收藏"
+          >
+            <el-icon><StarFilled /></el-icon>
+          </span>
           <span class="view-count">
             <el-icon><View /></el-icon>
             {{ content.viewCount }}
@@ -209,6 +262,10 @@ const handleTagClick = (e: Event, tag: string) => {
   margin-bottom: 16px;
 }
 
+.category-chip {
+  margin-bottom: 12px;
+}
+
 .card-footer {
   display: flex;
   justify-content: space-between;
@@ -251,6 +308,32 @@ const handleTagClick = (e: Event, tag: string) => {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.action-like,
+.action-fav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 8px;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.action-like:hover,
+.action-fav:hover {
+  color: var(--color-primary);
+  background: var(--color-secondary-light);
+}
+
+.action-like.active {
+  color: #e6a23c;
+  font-weight: 600;
+}
+
+.action-fav.active {
+  color: #f56c6c;
 }
 
 .card-tags {

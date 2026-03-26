@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useContentStore } from '@/stores/content'
 import type { MediaType, ContentStatus } from '@/api/content'
+import { categoryApi, type Category } from '@/api/category'
 import MediaUploader from '@/components/content/MediaUploader.vue'
 import type { FormInstance, FormRules } from 'element-plus'
 
@@ -11,13 +12,25 @@ const contentStore = useContentStore()
 
 const formRef = ref<FormInstance>()
 const tagInput = ref('')
+const categories = ref<Category[]>([])
+
 const form = reactive({
   title: '',
   body: '',
   mediaUrl: '',
   mediaType: 'TEXT' as MediaType,
   status: 'PUBLISHED' as ContentStatus,
+  categoryId: undefined as number | undefined,
   tags: [] as string[]
+})
+
+onMounted(async () => {
+  try {
+    const res = await categoryApi.list()
+    categories.value = res.data.data
+  } catch {
+    categories.value = []
+  }
 })
 
 const rules: FormRules = {
@@ -61,6 +74,7 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
         mediaUrl: form.mediaUrl || undefined,
         mediaType: form.mediaType,
         status: form.status,
+        categoryId: form.categoryId ?? undefined,
         tags: form.tags.length > 0 ? form.tags : undefined
       })
 
@@ -93,6 +107,22 @@ const handleSaveDraft = async () => {
           label-position="top"
           @submit.prevent="handleSubmit(formRef)"
         >
+          <el-form-item label="频道（可选）">
+            <el-select
+              v-model="form.categoryId"
+              placeholder="选择内容所属频道"
+              clearable
+              style="width: 100%"
+            >
+              <el-option
+                v-for="c in categories"
+                :key="c.id"
+                :label="c.name"
+                :value="c.id"
+              />
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="标题" prop="title">
             <el-input
               v-model="form.title"

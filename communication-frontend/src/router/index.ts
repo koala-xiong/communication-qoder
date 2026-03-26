@@ -65,6 +65,36 @@ const router = createRouter({
       meta: { title: '搜索' }
     },
     {
+      path: '/trending',
+      name: 'trending',
+      component: () => import('@/views/discover/TrendingView.vue'),
+      meta: { title: '热门排行' }
+    },
+    {
+      path: '/category/:id',
+      name: 'category',
+      component: () => import('@/views/discover/CategoryBrowseView.vue'),
+      meta: { title: '分类' }
+    },
+    {
+      path: '/notifications',
+      name: 'notifications',
+      component: () => import('@/views/user/NotificationsView.vue'),
+      meta: { title: '通知', requiresAuth: true }
+    },
+    {
+      path: '/favorites',
+      name: 'favorites',
+      component: () => import('@/views/user/FavoritesView.vue'),
+      meta: { title: '我的收藏', requiresAuth: true }
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: () => import('@/views/user/ReadingHistoryView.vue'),
+      meta: { title: '阅读历史', requiresAuth: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),

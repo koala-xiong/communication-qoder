@@ -8,10 +8,12 @@ import com.communication.entity.Content;
 import com.communication.entity.User;
 import com.communication.exception.BadRequestException;
 import com.communication.exception.ResourceNotFoundException;
+import com.communication.entity.NotificationType;
 import com.communication.repository.CommentRepository;
 import com.communication.repository.ContentRepository;
 import com.communication.repository.UserRepository;
 import com.communication.service.CommentService;
+import com.communication.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,11 +28,14 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public CommentServiceImpl(CommentRepository commentRepository, ContentRepository contentRepository, UserRepository userRepository) {
+    public CommentServiceImpl(CommentRepository commentRepository, ContentRepository contentRepository,
+                              UserRepository userRepository, NotificationService notificationService) {
         this.commentRepository = commentRepository;
         this.contentRepository = contentRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -63,6 +68,23 @@ public class CommentServiceImpl implements CommentService {
 
         content.setCommentCount(content.getCommentCount() + 1);
         contentRepository.save(content);
+
+        if (saved.getParent() == null) {
+            if (!content.getAuthor().getId().equals(user.getId())) {
+                notificationService.createNotification(
+                        content.getAuthor().getId(), user.getId(),
+                        NotificationType.COMMENT, contentId, saved.getId(),
+                        user.getUsername() + " 评论了你的文章「" + content.getTitle() + "」");
+            }
+        } else {
+            User parentAuthor = saved.getParent().getUser();
+            if (!parentAuthor.getId().equals(user.getId())) {
+                notificationService.createNotification(
+                        parentAuthor.getId(), user.getId(),
+                        NotificationType.COMMENT, contentId, saved.getId(),
+                        user.getUsername() + " 回复了你在「" + content.getTitle() + "」下的评论");
+            }
+        }
 
         return CommentDto.fromEntity(saved);
     }

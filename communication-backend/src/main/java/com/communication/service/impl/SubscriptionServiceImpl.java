@@ -13,6 +13,9 @@ import com.communication.exception.ResourceNotFoundException;
 import com.communication.repository.ContentRepository;
 import com.communication.repository.SubscriptionRepository;
 import com.communication.repository.UserRepository;
+import com.communication.entity.NotificationType;
+import com.communication.repository.ContentTagRepository;
+import com.communication.service.NotificationService;
 import com.communication.service.SubscriptionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,11 +31,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
     private final ContentRepository contentRepository;
+    private final ContentTagRepository contentTagRepository;
+    private final NotificationService notificationService;
 
-    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository, UserRepository userRepository, ContentRepository contentRepository) {
+    public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository, UserRepository userRepository,
+                                   ContentRepository contentRepository, ContentTagRepository contentTagRepository,
+                                   NotificationService notificationService) {
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
         this.contentRepository = contentRepository;
+        this.contentTagRepository = contentTagRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -58,6 +67,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .build();
 
         Subscription saved = subscriptionRepository.save(subscription);
+        notificationService.createNotification(
+                author.getId(), subscriber.getId(),
+                NotificationType.FOLLOW, null, null,
+                subscriber.getUsername() + " 关注了你");
         return SubscriptionDto.fromEntity(saved);
     }
 
@@ -152,7 +165,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .findByAuthorIdInAndStatusOrderByCreatedAtDesc(authorIds, ContentStatus.PUBLISHED, PageRequest.of(page, size));
 
         List<ContentDto> dtos = contents.getContent().stream()
-                .map(ContentDto::fromEntity)
+                .map(c -> {
+                    ContentDto dto = ContentDto.fromEntity(c);
+                    dto.setTags(contentTagRepository.findByContentId(c.getId())
+                            .stream().map(t -> t.getTag()).collect(Collectors.toList()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
 
         return PageResponse.<ContentDto>builder()

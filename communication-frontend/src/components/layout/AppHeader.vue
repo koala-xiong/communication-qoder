@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { Search, Plus, User, Star, Menu } from '@element-plus/icons-vue'
+import { useNotificationStore } from '@/stores/notifications'
+import { Search, Plus, User, Star, Menu, Bell, TrendCharts, Clock, Collection } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 const searchQuery = ref('')
 const mobileMenuVisible = ref(false)
 
@@ -37,6 +39,16 @@ const navigateTo = (path: string) => {
   router.push(path)
   mobileMenuVisible.value = false
 }
+
+async function refreshUnread() {
+  if (authStore.isAuthenticated) await notificationStore.fetchUnreadCount()
+}
+
+onMounted(() => refreshUnread())
+watch(
+  () => authStore.isAuthenticated,
+  () => refreshUnread()
+)
 </script>
 
 <template>
@@ -60,7 +72,24 @@ const navigateTo = (path: string) => {
 
       <!-- Desktop Navigation -->
       <nav class="nav-actions desktop-only">
+        <el-button text @click="router.push('/trending')">
+          <el-icon><TrendCharts /></el-icon>
+          热门
+        </el-button>
         <template v-if="authStore.isAuthenticated">
+          <el-badge :value="notificationStore.unreadCount" :hidden="notificationStore.unreadCount === 0" :max="99">
+            <el-button text circle @click="router.push('/notifications')">
+              <el-icon><Bell /></el-icon>
+            </el-button>
+          </el-badge>
+          <el-button text @click="router.push('/favorites')">
+            <el-icon><Collection /></el-icon>
+            收藏
+          </el-button>
+          <el-button text @click="router.push('/history')">
+            <el-icon><Clock /></el-icon>
+            历史
+          </el-button>
           <el-button text @click="router.push('/subscriptions')">
             <el-icon><Star /></el-icon>
             订阅
@@ -133,7 +162,7 @@ const navigateTo = (path: string) => {
         <div class="mobile-nav">
           <template v-if="authStore.isAuthenticated">
             <div class="mobile-user-info">
-              <el-avatar :size="48" :src="authStore.user?.avatarUrl">
+              <el-avatar :size="48" :src="authStore.user?.avatarUrl || undefined">
                 {{ authStore.user?.username?.charAt(0).toUpperCase() }}
               </el-avatar>
               <span class="username">{{ authStore.user?.username }}</span>
@@ -141,6 +170,19 @@ const navigateTo = (path: string) => {
             
             <el-button text class="mobile-nav-item" @click="navigateTo('/')">
               首页
+            </el-button>
+            <el-button text class="mobile-nav-item" @click="navigateTo('/trending')">
+              <el-icon><TrendCharts /></el-icon> 热门
+            </el-button>
+            <el-button text class="mobile-nav-item" @click="navigateTo('/notifications')">
+              <el-icon><Bell /></el-icon> 通知
+              <el-badge v-if="notificationStore.unreadCount" :value="notificationStore.unreadCount" class="ml-badge" />
+            </el-button>
+            <el-button text class="mobile-nav-item" @click="navigateTo('/favorites')">
+              <el-icon><Collection /></el-icon> 收藏
+            </el-button>
+            <el-button text class="mobile-nav-item" @click="navigateTo('/history')">
+              <el-icon><Clock /></el-icon> 阅读历史
             </el-button>
             <el-button text class="mobile-nav-item" @click="navigateTo('/subscriptions')">
               <el-icon><Star /></el-icon> 订阅

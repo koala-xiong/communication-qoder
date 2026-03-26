@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,9 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
 
     long countByAuthorIdAndStatus(Long authorId, ContentStatus status);
 
+    @Query("SELECT COALESCE(MAX(c.likeCount), 0) FROM Content c WHERE c.author.id = :authorId AND c.status = :status")
+    int maxLikeCountByAuthorId(@Param("authorId") Long authorId, @Param("status") ContentStatus status);
+
     @Query("SELECT SUM(c.viewCount) FROM Content c WHERE c.author.id = :authorId")
     Long sumViewCountByAuthorId(@Param("authorId") Long authorId);
 
@@ -52,4 +56,12 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
 
     @Query("SELECT c FROM Content c WHERE c.status = :status AND c.id IN :ids ORDER BY c.createdAt DESC")
     Page<Content> findByIdInAndStatus(@Param("ids") List<Long> ids, @Param("status") ContentStatus status, Pageable pageable);
+
+    Page<Content> findByCategoryIdAndStatus(Long categoryId, ContentStatus status, Pageable pageable);
+
+    @Query("SELECT c FROM Content c WHERE c.status = :status ORDER BY (c.viewCount + c.likeCount * 3 + c.commentCount * 2) DESC")
+    Page<Content> findTrending(@Param("status") ContentStatus status, Pageable pageable);
+
+    @Query("SELECT c FROM Content c WHERE c.status = :status AND c.createdAt >= :since ORDER BY (c.viewCount + c.likeCount * 3 + c.commentCount * 2) DESC")
+    Page<Content> findRecentPopular(@Param("status") ContentStatus status, @Param("since") LocalDateTime since, Pageable pageable);
 }

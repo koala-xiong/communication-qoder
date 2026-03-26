@@ -3,9 +3,11 @@ package com.communication.controller;
 import com.communication.dto.*;
 import com.communication.entity.ContentStatus;
 import com.communication.service.ContentService;
+import com.communication.service.ReadingHistoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.*;
 public class ContentController {
 
     private final ContentService contentService;
+    private final ReadingHistoryService readingHistoryService;
 
-    public ContentController(ContentService contentService) {
+    public ContentController(ContentService contentService, ReadingHistoryService readingHistoryService) {
         this.contentService = contentService;
+        this.readingHistoryService = readingHistoryService;
     }
 
     @PostMapping
@@ -39,9 +43,16 @@ public class ContentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ContentDto>> getContent(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ContentDto>> getContent(
+            @PathVariable Long id,
+            Authentication authentication) {
         ContentDto content = contentService.getContentById(id);
         contentService.incrementViewCount(id);
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof UserDetails ud) {
+            readingHistoryService.recordReading(id, ud.getUsername());
+        }
         return ResponseEntity.ok(ApiResponse.success(content));
     }
 

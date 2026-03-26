@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { contentApi, type Content, type PageResponse, type CreateContentRequest, type UpdateContentRequest, type ContentStatus } from '@/api/content'
+import { contentApi, type Content, type CreateContentRequest, type UpdateContentRequest } from '@/api/content'
 import { ElMessage } from 'element-plus'
 
 export const useContentStore = defineStore('content', () => {

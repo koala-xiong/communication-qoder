@@ -15,7 +15,10 @@ public class ContentDto {
     private MediaType mediaType;
     private Integer viewCount;
     private Integer commentCount;
+    private Integer likeCount;
     private ContentStatus status;
+    private Long categoryId;
+    private String categoryName;
     private List<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -24,7 +27,8 @@ public class ContentDto {
     public ContentDto() {}
 
     public ContentDto(Long id, String title, String body, String mediaUrl, MediaType mediaType,
-                      Integer viewCount, Integer commentCount, ContentStatus status, List<String> tags,
+                      Integer viewCount, Integer commentCount, Integer likeCount,
+                      ContentStatus status, Long categoryId, String categoryName, List<String> tags,
                       LocalDateTime createdAt, LocalDateTime updatedAt, UserDto author) {
         this.id = id;
         this.title = title;
@@ -33,7 +37,10 @@ public class ContentDto {
         this.mediaType = mediaType;
         this.viewCount = viewCount;
         this.commentCount = commentCount;
+        this.likeCount = likeCount;
         this.status = status;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
         this.tags = tags;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -54,8 +61,14 @@ public class ContentDto {
     public void setViewCount(Integer viewCount) { this.viewCount = viewCount; }
     public Integer getCommentCount() { return commentCount; }
     public void setCommentCount(Integer commentCount) { this.commentCount = commentCount; }
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
     public ContentStatus getStatus() { return status; }
     public void setStatus(ContentStatus status) { this.status = status; }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
     public List<String> getTags() { return tags; }
     public void setTags(List<String> tags) { this.tags = tags; }
     public LocalDateTime getCreatedAt() { return createdAt; }
@@ -74,7 +87,10 @@ public class ContentDto {
                 .mediaType(content.getMediaType())
                 .viewCount(content.getViewCount())
                 .commentCount(content.getCommentCount())
+                .likeCount(content.getLikeCount())
                 .status(content.getStatus())
+                .categoryId(content.getCategory() != null ? content.getCategory().getId() : null)
+                .categoryName(content.getCategory() != null ? content.getCategory().getName() : null)
                 .createdAt(content.getCreatedAt())
                 .updatedAt(content.getUpdatedAt())
                 .author(UserDto.fromEntity(content.getAuthor()))
@@ -91,7 +107,10 @@ public class ContentDto {
         private MediaType mediaType;
         private Integer viewCount;
         private Integer commentCount;
+        private Integer likeCount;
         private ContentStatus status;
+        private Long categoryId;
+        private String categoryName;
         private List<String> tags;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
@@ -104,14 +123,17 @@ public class ContentDto {
         public ContentDtoBuilder mediaType(MediaType mediaType) { this.mediaType = mediaType; return this; }
         public ContentDtoBuilder viewCount(Integer viewCount) { this.viewCount = viewCount; return this; }
         public ContentDtoBuilder commentCount(Integer commentCount) { this.commentCount = commentCount; return this; }
+        public ContentDtoBuilder likeCount(Integer likeCount) { this.likeCount = likeCount; return this; }
         public ContentDtoBuilder status(ContentStatus status) { this.status = status; return this; }
+        public ContentDtoBuilder categoryId(Long categoryId) { this.categoryId = categoryId; return this; }
+        public ContentDtoBuilder categoryName(String categoryName) { this.categoryName = categoryName; return this; }
         public ContentDtoBuilder tags(List<String> tags) { this.tags = tags; return this; }
         public ContentDtoBuilder createdAt(LocalDateTime createdAt) { this.createdAt = createdAt; return this; }
         public ContentDtoBuilder updatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; return this; }
         public ContentDtoBuilder author(UserDto author) { this.author = author; return this; }
 
         public ContentDto build() {
-            return new ContentDto(id, title, body, mediaUrl, mediaType, viewCount, commentCount, status, tags, createdAt, updatedAt, author);
+            return new ContentDto(id, title, body, mediaUrl, mediaType, viewCount, commentCount, likeCount, status, categoryId, categoryName, tags, createdAt, updatedAt, author);
         }
     }
 }

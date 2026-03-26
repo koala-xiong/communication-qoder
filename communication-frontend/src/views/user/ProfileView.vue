@@ -31,6 +31,17 @@
               <span class="stat-label">作品</span>
             </div>
           </div>
+
+          <div v-if="badges.length" class="badges-row">
+            <el-tooltip
+              v-for="b in badges"
+              :key="b.badgeType"
+              :content="b.description"
+              placement="top"
+            >
+              <el-tag type="success" effect="plain" size="small" round>{{ b.displayName }}</el-tag>
+            </el-tooltip>
+          </div>
           
           <div v-if="!isOwnProfile" class="profile-actions">
             <el-button
@@ -100,6 +111,7 @@ import { useAuthStore } from '@/stores/auth'
 import { userApi, type UserProfile } from '@/api/user'
 import { subscriptionApi, type User } from '@/api/subscription'
 import { contentApi, type Content } from '@/api/content'
+import { badgeApi, type Badge } from '@/api/badge'
 import ContentFeed from '@/components/content/ContentFeed.vue'
 import UserList from '@/components/user/UserList.vue'
 
@@ -120,6 +132,7 @@ const contentPage = ref(0)
 /** 首屏加载完成前为 true，避免 ContentFeed 误显示「加载更多」 */
 const isLast = ref(true)
 const contentCount = ref(0)
+const badges = ref<Badge[]>([])
 
 // 粉丝列表
 const showFollowersModal = ref(false)
@@ -148,14 +161,21 @@ const fetchUser = async () => {
     if (user.value) {
       // 获取订阅统计
       const counts = await subscriptionApi.getSubscriptionCount(user.value.id)
-      followerCount.value = counts.followers
-      subscriptionCount.value = counts.subscriptions
+      followerCount.value = counts?.followers ?? 0
+      subscriptionCount.value = counts?.subscriptions ?? 0
       
       // 检查是否已订阅
       if (authStore.isAuthenticated && !isOwnProfile.value) {
         isSubscribed.value = await subscriptionApi.checkSubscription(user.value.id)
       }
       
+      try {
+        const br = await badgeApi.getByUser(user.value.id)
+        badges.value = br.data.data ?? []
+      } catch {
+        badges.value = []
+      }
+
       // 获取用户内容
       await fetchContents(true)
     }
@@ -244,6 +264,7 @@ const loadMoreFollowers = async () => {
   followersLoading.value = true
   try {
     const res = await subscriptionApi.getFollowers(user.value.id, followersPage.value)
+    if (!res) return
     if (followersPage.value === 0) {
       followers.value = res.content
     } else {
@@ -265,6 +286,7 @@ const loadMoreSubscriptions = async () => {
   try {
     // 需要通过用户名获取关注列表，这里简化处理
     const res = await subscriptionApi.getMySubscriptions(subscriptionsPage.value)
+    if (!res) return
     if (subscriptionsPage.value === 0) {
       subscriptions.value = res.content
     } else {
@@ -382,6 +404,13 @@ onMounted(() => {
 .stat-label {
   font-size: 14px;
   color: var(--el-text-color-secondary);
+}
+
+.badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .profile-actions {
