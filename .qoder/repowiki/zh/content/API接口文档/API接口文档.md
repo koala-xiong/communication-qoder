@@ -1,795 +1,424 @@
 # API接口文档
 
 <cite>
-**本文档引用的文件**
+**本文引用的文件**
+- [CommunicationApplication.java](file://communication-backend/src/main/java/com/communication/CommunicationApplication.java)
+- [application.yml](file://communication-backend/src/main/resources/application.yml)
 - [AuthController.java](file://communication-backend/src/main/java/com/communication/controller/AuthController.java)
-- [UserController.java](file://communication-backend/src/main/java/com/communication/controller/UserController.java)
 - [ContentController.java](file://communication-backend/src/main/java/com/communication/controller/ContentController.java)
 - [CommentController.java](file://communication-backend/src/main/java/com/communication/controller/CommentController.java)
 - [SubscriptionController.java](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java)
 - [SearchController.java](file://communication-backend/src/main/java/com/communication/controller/SearchController.java)
+- [NotificationController.java](file://communication-backend/src/main/java/com/communication/controller/NotificationController.java)
 - [DashboardController.java](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java)
 - [UploadController.java](file://communication-backend/src/main/java/com/communication/controller/UploadController.java)
 - [ApiResponse.java](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java)
 - [PageResponse.java](file://communication-backend/src/main/java/com/communication/dto/PageResponse.java)
-- [AuthResponse.java](file://communication-backend/src/main/java/com/communication/dto/AuthResponse.java)
-- [LoginRequest.java](file://communication-backend/src/main/java/com/communication/dto/LoginRequest.java)
-- [RegisterRequest.java](file://communication-backend/src/main/java/com/communication/dto/RegisterRequest.java)
-- [ContentDto.java](file://communication-backend/src/main/java/com/communication/dto/ContentDto.java)
-- [CommentDto.java](file://communication-backend/src/main/java/com/communication/dto/CommentDto.java)
-- [UserDto.java](file://communication-backend/src/main/java/com/communication/dto/UserDto.java)
-- [CreateContentRequest.java](file://communication-backend/src/main/java/com/communication/dto/CreateContentRequest.java)
-- [User.java](file://communication-backend/src/main/java/com/communication/entity/User.java)
-- [JwtAuthenticationFilter.java](file://communication-backend/src/main/java/com/communication/config/JwtAuthenticationFilter.java)
-- [SecurityConfig.java](file://communication-backend/src/main/java/com/communication/config/SecurityConfig.java)
-- [CorsConfig.java](file://communication-backend/src/main/java/com/communication/config/CorsConfig.java)
-- [JwtUtil.java](file://communication-backend/src/main/java/com/communication/util/JwtUtil.java)
-- [GlobalExceptionHandler.java](file://communication-backend/src/main/java/com/communication/exception/GlobalExceptionHandler.java)
-- [BadRequestException.java](file://communication-backend/src/main/java/com/communication/exception/BadRequestException.java)
-- [ResourceNotFoundException.java](file://communication-backend/src/main/java/com/communication/exception/ResourceNotFoundException.java)
-- [http.ts](file://communication-frontend/src/api/http.ts)
-- [auth.ts](file://communication-frontend/src/stores/auth.ts)
-- [auth.ts](file://communication-frontend/src/api/auth.ts)
+- [10-API接口文档.md](file://wiki/10-API接口文档.md)
 </cite>
-
-## 更新摘要
-**所做更改**
-- 标准化统一响应格式：全面采用ApiResponse<T>包装所有接口响应，提供一致的结构化输出
-- 完善错误处理机制：通过GlobalExceptionHandler统一处理各类异常，确保标准化错误响应
-- 增强分页查询支持：PageResponse通用分页模型，支持内容、评论、用户、订阅等模块的分页需求
-- 优化认证响应格式：AuthResponse标准化认证结果，包含token、tokenType和用户信息
-- 完善DTO序列化：所有数据传输对象采用builder模式和静态工厂方法，确保数据一致性
-- 前端拦截器适配：前端axios拦截器已调整以支持统一响应格式，简化错误处理逻辑
 
 ## 目录
 1. [简介](#简介)
-2. [统一响应格式](#统一响应格式)
-3. [项目结构](#项目结构)
-4. [核心组件](#核心组件)
-5. [架构总览](#架构总览)
-6. [详细组件分析](#详细组件分析)
-7. [依赖关系分析](#依赖关系分析)
-8. [性能考虑](#性能考虑)
-9. [故障排除指南](#故障排除指南)
-10. [结论](#结论)
-11. [附录](#附录)
+2. [项目结构](#项目结构)
+3. [核心组件](#核心组件)
+4. [架构总览](#架构总览)
+5. [详细组件分析](#详细组件分析)
+6. [依赖分析](#依赖分析)
+7. [性能考虑](#性能考虑)
+8. [故障排查指南](#故障排查指南)
+9. [结论](#结论)
+10. [附录](#附录)
 
 ## 简介
-本文件为通信平台的完整RESTful API接口文档，覆盖认证、用户、内容、评论、订阅、搜索、后台管理、文件上传等模块。文档详细说明了各端点的HTTP方法、URL模式、请求参数、响应格式与状态码，并提供JWT认证机制说明、token管理策略、请求/响应示例、错误处理机制、版本控制与向后兼容性考虑以及客户端集成最佳实践。
+本文件为通信平台的完整API接口参考手册，覆盖认证、内容管理、评论、订阅、搜索、通知、后台仪表盘与媒体上传等模块。文档统一采用JSON响应封装，提供各接口的HTTP方法、URL模式、请求参数、响应格式、鉴权方式、分页结构、错误码说明，并给出请求/响应示例与调试建议。
 
-**更新** 本版本重点介绍了标准化的ApiResponse<T>统一响应格式，确保所有接口响应具有一致的结构和语义化状态码。前端拦截器已完全适配新的响应格式，提供更简洁的错误处理体验。
+- 基础地址：http://localhost:8080/api
+- 统一响应封装：ApiResponse<T>；分页响应：PageResponse
+- 鉴权方式：Bearer Token（除文件上传外均为application/json）
 
-## 统一响应格式
-
-### ApiResponse<T> 核心结构
-所有API响应均采用ApiResponse<T>统一包装，提供标准化的数据结构：
-
-```json
-{
-  "code": 200,
-  "message": "Success",
-  "data": {},
-  "timestamp": "2024-01-01T00:00:00"
-}
-```
-
-### 字段说明
-- **code**: HTTP语义化的业务状态码（如200表示成功，400表示客户端错误）
-- **message**: 简要的操作结果描述
-- **data**: 实际业务数据（可能为null，当操作成功但无返回数据时）
-- **timestamp**: 响应生成时间，采用LocalDateTime格式
-
-### 响应构建器模式
-提供多种便捷的响应构建方式：
-
-```java
-// 成功响应（自定义消息）
-ApiResponse.success("操作成功", userData);
-
-// 成功响应（默认消息）
-ApiResponse.success(userData);
-
-// 错误响应
-ApiResponse.error(400, "参数错误");
-
-// 使用构建器
-ApiResponse.<UserData>builder()
-    .code(200)
-    .message("Success")
-    .data(userData)
-    .timestamp(LocalDateTime.now())
-    .build();
-```
-
-### 分页响应格式
-PageResponse通用分页模型，支持所有分页查询接口：
-
-```json
-{
-  "content": [],
-  "page": 0,
-  "size": 10,
-  "totalElements": 100,
-  "totalPages": 10,
-  "first": true,
-  "last": false
-}
-```
-
-**章节来源**
-- [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
-- [PageResponse.java:1-65](file://communication-backend/src/main/java/com/communication/dto/PageResponse.java#L1-L65)
+章节来源
+- [10-API接口文档.md:1-53](file://wiki/10-API接口文档.md#L1-L53)
 
 ## 项目结构
-后端采用Spring Boot分层架构，按功能模块划分控制器（Controller）、服务（Service）与数据传输对象（DTO），统一通过ApiResponse包装响应体，确保一致的返回格式。
+后端基于Spring Boot，采用分层架构：
+- 控制器层：controller 包，负责HTTP路由与参数绑定
+- 服务层：service 包，包含业务逻辑与数据访问协调
+- DTO 层：dto 包，定义请求/响应数据模型
+- 实体与仓库：entity/repository 包，持久化模型与数据访问
+- 配置：resources/application.yml，数据库、JPA、JWT、文件上传配置
 
 ```mermaid
 graph TB
-subgraph "控制器层"
-AC["AuthController<br/>认证接口"]
-UC["UserController<br/>用户查询"]
-CC["ContentController<br/>内容CRUD"]
-ComC["CommentController<br/>评论管理"]
-SubC["SubscriptionController<br/>订阅管理"]
-SC["SearchController<br/>搜索接口"]
-DC["DashboardController<br/>后台管理"]
-UpC["UploadController<br/>文件上传"]
+subgraph "后端应用"
+C1["AuthController"]
+C2["ContentController"]
+C3["CommentController"]
+C4["SubscriptionController"]
+C5["SearchController"]
+C6["NotificationController"]
+C7["DashboardController"]
+C8["UploadController"]
+S1["UserService<br/>BadgeService<br/>ContentService<br/>CommentService<br/>SubscriptionService<br/>SearchService<br/>NotificationService<br/>DashboardService<br/>FileUploadService"]
+D1["ApiResponse"]
+D2["PageResponse"]
 end
-subgraph "服务层"
-US["UserService"]
-CS["ContentService"]
-ComS["CommentService"]
-SubS["SubscriptionService"]
-SS["SearchService"]
-DS["DashboardService"]
-FUS["FileUploadService"]
-end
-subgraph "数据传输对象"
-AR["ApiResponse<T>"]
-PR["PageResponse<T>"]
-LR["LoginRequest"]
-RR["RegisterRequest"]
-AD["AuthResponse"]
-CD["ContentDto"]
-DCD["CommentDto"]
-UD["UserDto"]
-CCR["CreateContentRequest"]
-end
-AC --> US
-UC --> US
-CC --> CS
-ComC --> ComS
-SubC --> SubS
-SC --> SS
-DC --> DS
-UpC --> FUS
-AC --> AR
-CC --> AR
-ComC --> AR
-SubC --> AR
-SC --> AR
-DC --> AR
-UpC --> AR
-AC --> LR
-AC --> RR
-AC --> AD
-CC --> CCR
-CC --> CD
-ComC --> DCD
-SubC --> UD
-UC --> UD
+C1 --> S1
+C2 --> S1
+C3 --> S1
+C4 --> S1
+C5 --> S1
+C6 --> S1
+C7 --> S1
+C8 --> S1
+C1 --> D1
+C2 --> D1
+C3 --> D1
+C4 --> D1
+C5 --> D1
+C6 --> D1
+C7 --> D1
+C8 --> D1
+C2 --> D2
+C3 --> D2
+C4 --> D2
+C5 --> D2
+C6 --> D2
+C7 --> D2
 ```
 
-**图表来源**
-- [AuthController.java:1-42](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L1-L42)
-- [UserController.java:1-26](file://communication-backend/src/main/java/com/communication/controller/UserController.java#L1-L26)
-- [ContentController.java:1-85](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L1-L85)
+图表来源
+- [AuthController.java:1-47](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L1-L47)
+- [ContentController.java:1-96](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L1-L96)
 - [CommentController.java:1-55](file://communication-backend/src/main/java/com/communication/controller/CommentController.java#L1-L55)
 - [SubscriptionController.java:1-77](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java#L1-L77)
 - [SearchController.java:1-56](file://communication-backend/src/main/java/com/communication/controller/SearchController.java#L1-L56)
+- [NotificationController.java:1-47](file://communication-backend/src/main/java/com/communication/controller/NotificationController.java#L1-L47)
 - [DashboardController.java:1-65](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java#L1-L65)
 - [UploadController.java:1-59](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L1-L59)
 - [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
 - [PageResponse.java:1-65](file://communication-backend/src/main/java/com/communication/dto/PageResponse.java#L1-L65)
 
-**章节来源**
-- [AuthController.java:1-42](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L1-L42)
-- [ContentController.java:1-85](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L1-L85)
-- [CommentController.java:1-55](file://communication-backend/src/main/java/com/communication/controller/CommentController.java#L1-L55)
-- [SubscriptionController.java:1-77](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java#L1-L77)
-- [SearchController.java:1-56](file://communication-backend/src/main/java/com/communication/controller/SearchController.java#L1-L56)
-- [DashboardController.java:1-65](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java#L1-L65)
-- [UploadController.java:1-59](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L1-L59)
-- [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
-- [PageResponse.java:1-65](file://communication-backend/src/main/java/com/communication/dto/PageResponse.java#L1-L65)
+章节来源
+- [CommunicationApplication.java:1-13](file://communication-backend/src/main/java/com/communication/CommunicationApplication.java#L1-L13)
+- [application.yml:1-42](file://communication-backend/src/main/resources/application.yml#L1-L42)
 
 ## 核心组件
-- **统一响应包装**：所有接口均以ApiResponse<T>返回，包含状态码、消息、时间戳与业务数据，确保前后端交互的一致性。
-- **认证与授权**：基于JWT，通过过滤器解析token并注入认证信息；部分端点需要登录态。
-- **错误处理**：全局异常处理器捕获业务异常与安全异常，统一返回标准错误响应，包含详细的错误信息和语义化状态码。
-- **数据模型**：User、Content、Comment、Subscription等实体通过DTO进行序列化传输，采用builder模式确保数据完整性。
-- **前端适配**：前端axios拦截器已完全适配统一响应格式，简化了错误处理和数据提取逻辑。
+- 统一响应封装：ApiResponse<T>，包含code、message、data、timestamp，提供success/error静态工厂方法
+- 分页响应：PageResponse<T>，包含content、page、size、totalElements、totalPages、first、last
+- 配置要点：JWT密钥与过期时间、文件上传大小与类型限制、数据库连接与Flyway迁移
 
-**更新** 新增标准化的响应格式和统一的错误处理机制，提升了API的一致性和可靠性。前端拦截器已优化以更好地支持新的响应结构。
-
-**章节来源**
+章节来源
 - [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
-- [GlobalExceptionHandler.java](file://communication-backend/src/main/java/com/communication/exception/GlobalExceptionHandler.java)
-- [JwtAuthenticationFilter.java](file://communication-backend/src/main/java/com/communication/config/JwtAuthenticationFilter.java)
-- [SecurityConfig.java](file://communication-backend/src/main/java/com/communication/config/SecurityConfig.java)
+- [PageResponse.java:1-65](file://communication-backend/src/main/java/com/communication/dto/PageResponse.java#L1-L65)
+- [application.yml:33-42](file://communication-backend/src/main/resources/application.yml#L33-L42)
 
 ## 架构总览
-下图展示客户端与后端的交互流程，重点体现JWT认证、统一响应包装和全局异常处理。
+下图展示API调用链路与数据流：客户端通过控制器接收请求，控制器调用服务层执行业务逻辑，服务层与实体/仓库交互，最终以ApiResponse或PageResponse封装返回。
 
 ```mermaid
 sequenceDiagram
 participant Client as "客户端"
-participant Filter as "JWT过滤器"
-participant Ctl as "控制器"
+participant Ctrl as "控制器"
 participant Svc as "服务层"
-participant Resp as "统一响应"
-participant Handler as "全局异常处理器"
-Client->>Filter : "携带Authorization头请求"
-Filter->>Filter : "校验/解析JWT"
-Filter->>Ctl : "注入认证信息后转发"
-Ctl->>Svc : "调用业务逻辑"
-Svc-->>Ctl : "返回业务数据"
-Ctl->>Resp : "封装ApiResponse"
-Note over Resp : "统一响应格式包装"
-Resp-->>Client : "标准化响应"
-Client->>Handler : "异常请求"
-Handler-->>Client : "标准化错误响应"
+participant DB as "数据库"
+Client->>Ctrl : "HTTP请求"
+Ctrl->>Svc : "调用业务方法"
+Svc->>DB : "查询/更新"
+DB-->>Svc : "返回数据"
+Svc-->>Ctrl : "领域对象"
+Ctrl-->>Client : "ApiResponse/PageResponse"
 ```
 
-**图表来源**
-- [JwtAuthenticationFilter.java](file://communication-backend/src/main/java/com/communication/config/JwtAuthenticationFilter.java)
-- [AuthController.java:1-42](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L1-L42)
-- [ContentController.java:1-85](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L1-L85)
-- [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
-- [GlobalExceptionHandler.java:1-63](file://communication-backend/src/main/java/com/communication/exception/GlobalExceptionHandler.java#L1-L63)
+图表来源
+- [AuthController.java:25-45](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L25-L45)
+- [ContentController.java:27-94](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L27-L94)
+- [CommentController.java:23-53](file://communication-backend/src/main/java/com/communication/controller/CommentController.java#L23-L53)
+- [SubscriptionController.java:19-75](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java#L19-L75)
+- [SearchController.java:23-54](file://communication-backend/src/main/java/com/communication/controller/SearchController.java#L23-L54)
+- [NotificationController.java:22-45](file://communication-backend/src/main/java/com/communication/controller/NotificationController.java#L22-L45)
+- [DashboardController.java:27-63](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java#L27-L63)
+- [UploadController.java:23-57](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L23-L57)
 
 ## 详细组件分析
 
-### 认证模块（/api/auth）
-- **注册**
+### 认证接口（/api/auth）
+- 注册
   - 方法与路径：POST /api/auth/register
+  - 鉴权：无需
   - 请求体：RegisterRequest（用户名、邮箱、密码）
-  - 成功响应：201 Created，返回ApiResponse<AuthResponse>（token、tokenType、user）
-  - 失败响应：400 Bad Request（字段校验失败或业务异常）
-- **登录**
+  - 响应：201，包含AuthResponse（token与user）
+  - 示例：见“请求示例/响应示例/错误码”
+- 登录
   - 方法与路径：POST /api/auth/login
-  - 请求体：LoginRequest（用户名或邮箱、密码）
-  - 成功响应：200 OK，返回ApiResponse<AuthResponse>
-  - 失败响应：401 Unauthorized（凭据无效）
-- **获取当前用户**
+  - 鉴权：无需
+  - 请求体：LoginRequest（用户名、密码）
+  - 响应：200，包含AuthResponse
+  - 示例：见“请求示例/响应示例/错误码”
+- 获取当前用户
   - 方法与路径：GET /api/auth/me
-  - 鉴权：需要Bearer Token
-  - 成功响应：200 OK，返回ApiResponse<UserDto>
-  - 失败响应：401 Unauthorized 或 404 Not Found
+  - 鉴权：Bearer Token
+  - 响应：UserDto
 
-**请求示例**
-- 注册请求体示例：{"username":"alice","email":"alice@example.com","password":"Password123"}
-- 登录请求体示例：{"usernameOrEmail":"alice","password":"Password123"}
+章节来源
+- [AuthController.java:25-45](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L25-L45)
+- [10-API接口文档.md:57-118](file://wiki/10-API接口文档.md#L57-L118)
 
-**成功响应示例**
-```json
-{
-  "code": 201,
-  "message": "Registration successful",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "tokenType": "Bearer",
-    "user": {
-      "id": 1,
-      "username": "alice",
-      "email": "alice@example.com",
-      "avatarUrl": null,
-      "bio": null,
-      "createdAt": "2024-01-01T00:00:00"
-    }
-  },
-  "timestamp": "2024-01-01T00:00:00"
-}
-```
+### 用户接口（/api/users）
+- 获取用户信息
+  - 方法与路径：GET /api/users/{id}
+  - 鉴权：可选
+  - 响应：UserDto
 
-**失败响应示例**
-```json
-{
-  "code": 400,
-  "message": "用户名已存在",
-  "data": null,
-  "timestamp": "2024-01-01T00:00:00"
-}
-```
+章节来源
+- [10-API接口文档.md:121-141](file://wiki/10-API接口文档.md#L121-L141)
 
-**状态码**
-- 200：操作成功
-- 201：资源创建成功
-- 400：请求参数非法或业务异常
-- 401：未认证或认证失败
-- 404：资源不存在
-
-**章节来源**
-- [AuthController.java:1-42](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L1-L42)
-- [RegisterRequest.java:1-30](file://communication-backend/src/main/java/com/communication/dto/RegisterRequest.java#L1-L30)
-- [LoginRequest.java:1-20](file://communication-backend/src/main/java/com/communication/dto/LoginRequest.java#L1-L20)
-- [AuthResponse.java:1-47](file://communication-backend/src/main/java/com/communication/dto/AuthResponse.java#L1-L47)
-- [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
-
-### 用户模块（/api/users）
-- **查询用户**
-  - 方法与路径：GET /api/users/{username}
-  - 路径参数：username（字符串）
-  - 成功响应：200 OK，返回ApiResponse<UserDto>
-  - 失败响应：404 Not Found
-
-**请求示例**
-- GET /api/users/alice
-
-**成功响应示例**
-```json
-{
-  "code": 200,
-  "message": "Success",
-  "data": {
-    "id": 1,
-    "username": "alice",
-    "email": "alice@example.com",
-    "avatarUrl": null,
-    "bio": null,
-    "createdAt": "2024-01-01T00:00:00"
-  },
-  "timestamp": "2024-01-01T00:00:00"
-}
-```
-
-**状态码**
-- 200：查询成功
-- 404：用户不存在
-
-**章节来源**
-- [UserController.java:1-26](file://communication-backend/src/main/java/com/communication/controller/UserController.java#L1-L26)
-- [UserDto.java:1-72](file://communication-backend/src/main/java/com/communication/dto/UserDto.java#L1-L72)
-- [User.java:1-96](file://communication-backend/src/main/java/com/communication/entity/User.java#L1-L96)
-
-### 内容模块（/api/contents）
-- **创建内容**
+### 内容接口（/api/contents）
+- 创建内容
   - 方法与路径：POST /api/contents
-  - 鉴权：需要Bearer Token
-  - 请求体：CreateContentRequest（标题、正文、媒体类型、标签等）
-  - 成功响应：201 Created，返回ApiResponse<ContentDto>
-  - 失败响应：400/401/403
-- **分页获取公开内容**
-  - 方法与路径：GET /api/contents?page=0&size=10
-  - 查询参数：page（默认0）、size（默认10）
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<ContentDto>>
-- **获取指定内容详情**
+  - 鉴权：Bearer Token
+  - 请求体：CreateContentRequest（title、body、mediaUrl、mediaType、status、tags）
+  - 响应：201，ContentDto
+- 获取内容列表
+  - 方法与路径：GET /api/contents?page=&size=
+  - 鉴权：可选
+  - 响应：分页内容列表（ContentDto）
+- 获取内容详情
   - 方法与路径：GET /api/contents/{id}
-  - 路径参数：id（长整型）
-  - 成功响应：200 OK，返回ApiResponse<ContentDto>（访问量+1）
-  - 失败响应：404
-- **更新内容**
+  - 鉴权：可选
+  - 行为：访问时自动增加浏览量；若已登录，记录阅读历史
+  - 响应：ContentDto
+- 更新内容
   - 方法与路径：PUT /api/contents/{id}
-  - 鉴权：需要Bearer Token
-  - 请求体：UpdateContentRequest
-  - 成功响应：200 OK，返回ApiResponse<ContentDto>
-  - 失败响应：400/401/403/404
-- **删除内容**
+  - 鉴权：Bearer Token
+  - 请求体：UpdateContentRequest（全部字段可更新）
+  - 响应：ContentDto
+- 删除内容
   - 方法与路径：DELETE /api/contents/{id}
-  - 鉴权：需要Bearer Token
-  - 成功响应：200 OK，返回ApiResponse<Void>
-  - 失败响应：400/401/403/404
-- **按作者分页查询内容**
-  - 方法与路径：GET /api/contents/user/{authorId}?page=0&size=10
-  - 路径参数：authorId（长整型）
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<ContentDto>>
-- **获取我的内容**
-  - 方法与路径：GET /api/contents/my?status=&page=0&size=10
-  - 鉴权：需要Bearer Token
-  - 查询参数：status（可选枚举）、page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<ContentDto>>
+  - 鉴权：Bearer Token
+  - 响应：200，成功消息
+- 获取指定作者内容
+  - 方法与路径：GET /api/contents/user/{authorId}?page=&size=
+  - 鉴权：可选
+  - 响应：分页内容列表
+- 获取我的内容
+  - 方法与路径：GET /api/contents/my?status=&page=&size=
+  - 鉴权：Bearer Token
+  - 参数：status可选（PUBLISHED/DRAFT），默认返回全部
+  - 响应：分页内容列表
 
-**请求示例**
-- 创建内容请求体示例：{"title":"文章标题","body":"文章内容","mediaType":"IMAGE","tags":["tag1","tag2"]}
-- 更新内容请求体示例：{"title":"更新标题","body":"更新内容","mediaType":"IMAGE","tags":["tag1"]}
+章节来源
+- [ContentController.java:27-94](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L27-L94)
+- [10-API接口文档.md:143-222](file://wiki/10-API接口文档.md#L143-L222)
 
-**成功响应示例**
-```json
-{
-  "code": 200,
-  "message": "Success",
-  "data": {
-    "id": 1,
-    "title": "文章标题",
-    "body": "文章内容",
-    "mediaUrl": null,
-    "mediaType": "IMAGE",
-    "viewCount": 0,
-    "commentCount": 0,
-    "status": "DRAFT",
-    "tags": ["tag1"],
-    "createdAt": "2024-01-01T00:00:00",
-    "updatedAt": "2024-01-01T00:00:00",
-    "author": {
-      "id": 1,
-      "username": "alice",
-      "email": "alice@example.com",
-      "avatarUrl": null,
-      "bio": null,
-      "createdAt": "2024-01-01T00:00:00"
-    }
-  },
-  "timestamp": "2024-01-01T00:00:00"
-}
-```
-
-**状态码**
-- 200：操作成功
-- 201：创建成功
-- 400：请求参数非法或权限不足
-- 401：未认证
-- 403：无权限
-- 404：资源不存在
-
-**章节来源**
-- [ContentController.java:1-85](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L1-L85)
-- [ContentDto.java:1-118](file://communication-backend/src/main/java/com/communication/dto/ContentDto.java#L1-L118)
-- [CreateContentRequest.java:1-42](file://communication-backend/src/main/java/com/communication/dto/CreateContentRequest.java#L1-L42)
-
-### 评论模块（/api/contents/{contentId}/comments）
-- **发表评论**
+### 评论接口（/api/contents/{contentId}/comments）
+- 发表评论
   - 方法与路径：POST /api/contents/{contentId}/comments
-  - 鉴权：需要Bearer Token
-  - 请求体：CreateCommentRequest（评论内容、父评论ID可选）
-  - 成功响应：200 OK，返回ApiResponse<CommentDto>
-  - 失败响应：400/401/404
-- **分页获取评论**
-  - 方法与路径：GET /api/contents/{contentId}/comments?page=0&size=20
-  - 路径参数：contentId（长整型）
-  - 查询参数：page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<CommentDto>>
-- **获取单条评论**
+  - 鉴权：Bearer Token
+  - 请求体：CreateCommentRequest（body、parentId）
+  - 响应：CommentDto
+- 获取评论列表
+  - 方法与路径：GET /api/contents/{contentId}/comments?page=&size=
+  - 鉴权：可选
+  - 响应：分页评论列表
+- 获取单条评论
   - 方法与路径：GET /api/contents/{contentId}/comments/{commentId}
-  - 路径参数：commentId（长整型）
-  - 成功响应：200 OK，返回ApiResponse<CommentDto>
-- **删除评论**
+  - 鉴权：可选
+  - 响应：CommentDto
+- 删除评论
   - 方法与路径：DELETE /api/contents/{contentId}/comments/{commentId}
-  - 鉴权：需要Bearer Token
-  - 成功响应：200 OK，返回ApiResponse<Void>
-  - 失败响应：400/401/403/404
+  - 鉴权：Bearer Token
+  - 响应：200，成功消息
 
-**请求示例**
-- 发表评论请求体示例：{"body":"这是一条评论","parentId":null}
+章节来源
+- [CommentController.java:23-53](file://communication-backend/src/main/java/com/communication/controller/CommentController.java#L23-L53)
+- [10-API接口文档.md:224-266](file://wiki/10-API接口文档.md#L224-L266)
 
-**成功响应示例**
-```json
-{
-  "code": 200,
-  "message": "Success",
-  "data": {
-    "id": 1,
-    "contentId": 1,
-    "user": {
-      "id": 1,
-      "username": "alice",
-      "email": "alice@example.com",
-      "avatarUrl": null,
-      "bio": null,
-      "createdAt": "2024-01-01T00:00:00"
-    },
-    "body": "这是一条评论",
-    "parentId": null,
-    "replies": [],
-    "createdAt": "2024-01-01T00:00:00",
-    "updatedAt": "2024-01-01T00:00:00"
-  },
-  "timestamp": "2024-01-01T00:00:00"
-}
-```
-
-**状态码**
-- 200：操作成功
-- 400：请求参数非法或权限不足
-- 401：未认证
-- 403：无权限
-- 404：资源不存在
-
-**章节来源**
-- [CommentController.java:1-55](file://communication-backend/src/main/java/com/communication/controller/CommentController.java#L1-L55)
-- [CommentDto.java:1-99](file://communication-backend/src/main/java/com/communication/dto/CommentDto.java#L1-L99)
-
-### 订阅模块（/api/subscriptions）
-- **关注作者**
+### 订阅接口（/api/subscriptions）
+- 关注用户
   - 方法与路径：POST /api/subscriptions/{authorId}
-  - 鉴权：需要Bearer Token
-  - 路径参数：authorId（长整型）
-  - 成功响应：200 OK，返回ApiResponse<SubscriptionDto>
-  - 失败响应：400/401/404
-- **取消关注**
+  - 鉴权：Bearer Token
+  - 响应：SubscriptionDto
+- 取消关注
   - 方法与路径：DELETE /api/subscriptions/{authorId}
-  - 鉴权：需要Bearer Token
-  - 成功响应：200 OK，返回ApiResponse<Void>
-- **检查是否已关注**
+  - 鉴权：Bearer Token
+  - 响应：200，成功消息
+- 检查是否已关注
   - 方法与路径：GET /api/subscriptions/check/{authorId}
-  - 鉴权：需要Bearer Token
-  - 成功响应：200 OK，返回ApiResponse<Boolean>
-- **我的关注列表**
-  - 方法与路径：GET /api/subscriptions/my?page=0&size=20
-  - 鉴权：需要Bearer Token
-  - 查询参数：page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<UserDto>>
-- **某用户的粉丝列表**
-  - 方法与路径：GET /api/subscriptions/followers/{userId}?page=0&size=20
-  - 路径参数：userId（长整型）
-  - 查询参数：page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<UserDto>>
-- **订阅动态流**
-  - 方法与路径：GET /api/subscriptions/feed?page=0&size=10
-  - 鉴权：需要Bearer Token
-  - 查询参数：page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<ContentDto>>
-- **订阅统计**
+  - 鉴权：Bearer Token
+  - 响应：布尔值
+- 我的订阅列表
+  - 方法与路径：GET /api/subscriptions/my?page=&size=
+  - 鉴权：Bearer Token
+  - 响应：分页用户列表
+- 粉丝列表
+  - 方法与路径：GET /api/subscriptions/followers/{userId}?page=&size=
+  - 鉴权：可选
+  - 响应：分页用户列表
+- 订阅/粉丝数量
   - 方法与路径：GET /api/subscriptions/count/{userId}
-  - 路径参数：userId（长整型）
-  - 成功响应：200 OK，返回ApiResponse<SubscriptionCountDto>（订阅数、粉丝数）
+  - 鉴权：可选
+  - 响应：订阅数与粉丝数
+- 订阅Feed流
+  - 方法与路径：GET /api/subscriptions/feed?page=&size=
+  - 鉴权：Bearer Token
+  - 响应：分页内容列表
 
-**状态码**
-- 200：操作成功
-- 400：请求参数非法或业务异常
-- 401：未认证
-- 404：资源不存在
+章节来源
+- [SubscriptionController.java:19-75](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java#L19-L75)
+- [10-API接口文档.md:267-321](file://wiki/10-API接口文档.md#L267-L321)
 
-**章节来源**
-- [SubscriptionController.java:1-77](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java#L1-L77)
+### 搜索接口（/api/search）
+- 搜索内容
+  - 方法与路径：GET /api/search/contents?q=&tag=&page=&size=
+  - 鉴权：可选
+  - 响应：分页内容列表
+- 搜索用户
+  - 方法与路径：GET /api/search/users?q=&page=&size=
+  - 鉴权：可选
+  - 响应：分页用户列表
+- 热门标签
+  - 方法与路径：GET /api/search/tags/popular?limit=
+  - 鉴权：可选
+  - 响应：标签数组
+- 标签建议
+  - 方法与路径：GET /api/search/tags/suggest?q=
+  - 鉴权：可选
+  - 响应：标签建议数组
 
-### 搜索模块（/api/search）
-- **搜索内容**
-  - 方法与路径：GET /api/search/contents?q=&tag=&page=0&size=10
-  - 查询参数：q（关键词）、tag（标签）、page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<ContentDto>>
-- **搜索用户**
-  - 方法与路径：GET /api/search/users?q=&page=0&size=10
-  - 查询参数：q（关键词）、page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<UserDto>>
-- **获取热门标签**
-  - 方法与路径：GET /api/search/tags/popular?limit=20
-  - 查询参数：limit（默认20）
-  - 成功响应：200 OK，返回ApiResponse<List<String>>
-- **标签智能提示**
-  - 方法与路径：GET /api/search/tags/suggest?q=xxx
-  - 查询参数：q（标签前缀）
-  - 成功响应：200 OK，返回ApiResponse<List<String>>
+章节来源
+- [SearchController.java:23-54](file://communication-backend/src/main/java/com/communication/controller/SearchController.java#L23-L54)
+- [10-API接口文档.md:322-352](file://wiki/10-API接口文档.md#L322-L352)
 
-**状态码**
-- 200：操作成功
-- 400：请求参数非法
+### 通知接口（/api/notifications）
+- 获取通知列表
+  - 方法与路径：GET /api/notifications?page=&size=
+  - 鉴权：Bearer Token
+  - 响应：分页通知列表
+- 未读数量
+  - 方法与路径：GET /api/notifications/unread-count
+  - 鉴权：Bearer Token
+  - 响应：未读计数
+- 标记为已读
+  - 方法与路径：PUT /api/notifications/{id}/read
+  - 鉴权：Bearer Token
+  - 响应：200，成功消息
+- 全部标记为已读
+  - 方法与路径：PUT /api/notifications/read-all
+  - 鉴权：Bearer Token
+  - 响应：200，成功消息
 
-**章节来源**
-- [SearchController.java:1-56](file://communication-backend/src/main/java/com/communication/controller/SearchController.java#L1-L56)
+章节来源
+- [NotificationController.java:22-45](file://communication-backend/src/main/java/com/communication/controller/NotificationController.java#L22-L45)
+- [10-API接口文档.md:354-409](file://wiki/10-API接口文档.md#L354-L409)
 
-### 后台管理模块（/api/dashboard）
-- **获取统计数据**
+### 后台管理接口（/api/dashboard）
+- 获取统计数据
   - 方法与路径：GET /api/dashboard/stats
-  - 鉴权：需要Bearer Token
-  - 成功响应：200 OK，返回ApiResponse<DashboardStatsDto>
-- **查看我的内容（支持按状态筛选）**
-  - 方法与路径：GET /api/dashboard/contents?status=&page=0&size=10
-  - 鉴权：需要Bearer Token
-  - 查询参数：status（可选枚举）、page、size
-  - 成功响应：200 OK，返回ApiResponse<PageResponse<ContentDto>>
-- **更新个人资料**
+  - 鉴权：Bearer Token
+  - 响应：DashboardStatsDto
+- 获取我的内容列表
+  - 方法与路径：GET /api/dashboard/contents?status=&page=&size=
+  - 鉴权：Bearer Token
+  - 响应：分页内容列表
+- 更新个人资料
   - 方法与路径：PUT /api/dashboard/profile
-  - 鉴权：需要Bearer Token
-  - 请求体：UpdateProfileRequest（昵称、简介等）
-  - 成功响应：200 OK，返回ApiResponse<UserDto>
-- **上传头像**
+  - 鉴权：Bearer Token
+  - 请求体：UpdateProfileRequest（username、bio）
+  - 响应：UserDto
+- 上传头像
   - 方法与路径：POST /api/dashboard/avatar
-  - 鉴权：需要Bearer Token
-  - 表单参数：file（multipart文件）
-  - 成功响应：200 OK，返回ApiResponse<UserDto>
+  - 鉴权：Bearer Token
+  - 请求：multipart/form-data，字段file
+  - 响应：UserDto
 
-**状态码**
-- 200：操作成功
-- 201：创建成功
-- 400：请求参数非法或业务异常
-- 401：未认证
+章节来源
+- [DashboardController.java:27-63](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java#L27-L63)
+- [10-API接口文档.md:354-409](file://wiki/10-API接口文档.md#L354-L409)
 
-**章节来源**
-- [DashboardController.java:1-65](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java#L1-L65)
-
-### 文件上传模块（/api/upload）
-- **上传图片**
+### 媒体上传接口（/api/upload）
+- 上传图片
   - 方法与路径：POST /api/upload/image
-  - 请求参数：file（multipart文件）
-  - 成功响应：200 OK，返回ApiResponse<Map<String,Object>>（包含URL和媒体类型）
-  - 失败响应：400 Bad Request（不支持的图片类型）
-- **上传视频**
+  - 鉴权：Bearer Token
+  - 请求：multipart/form-data，字段file
+  - 支持类型：JPEG、PNG、GIF、WebP
+  - 响应：包含url与mediaType
+- 上传视频
   - 方法与路径：POST /api/upload/video
-  - 请求参数：file（multipart文件）
-  - 成功响应：200 OK，返回ApiResponse<Map<String,Object>>（包含URL和媒体类型）
-  - 失败响应：400 Bad Request（不支持的视频类型）
+  - 鉴权：Bearer Token
+  - 请求：multipart/form-data，字段file
+  - 支持类型：MP4、WebM、MOV
+  - 响应：包含url与mediaType
 
-**支持的图片类型**：JPEG、PNG、GIF、WebP
-**支持的视频类型**：MP4、WebM、MOV
+章节来源
+- [UploadController.java:23-57](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L23-L57)
+- [10-API接口文档.md:411-456](file://wiki/10-API接口文档.md#L411-L456)
 
-**状态码**
-- 200：上传成功
-- 400：文件类型不支持或文件过大
+### 静态资源访问
+- 上传文件可通过以下URL直接访问（无需认证）
+  - GET /uploads/{type}/{filename}
+  - 示例：GET /uploads/images/abc123.jpg
 
-**章节来源**
-- [UploadController.java:1-59](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L1-L59)
+章节来源
+- [10-API接口文档.md:459-468](file://wiki/10-API接口文档.md#L459-L468)
 
-## 依赖关系分析
-- **控制器到服务层**：各控制器通过依赖注入的服务接口调用业务逻辑，保持职责分离。
-- **DTO映射**：实体类通过静态工厂方法或builder转换为DTO，避免直接暴露持久化实体。
-- **统一响应**：所有控制器返回值经ApiResponse包装，便于前端统一处理。
-- **安全配置**：SecurityConfig定义拦截规则，JwtAuthenticationFilter负责解析与验证token。
-- **异常处理**：GlobalExceptionHandler统一处理各类业务异常，确保标准化错误响应。
+## 依赖分析
+- 控制器依赖服务层，服务层依赖实体与仓库，统一通过ApiResponse/PageResponse封装返回
+- 配置集中于application.yml，包含JWT、数据库、文件上传等关键参数
 
 ```mermaid
-classDiagram
-class AuthController
-class UserController
-class ContentController
-class CommentController
-class SubscriptionController
-class SearchController
-class DashboardController
-class UploadController
-class UserService
-class ContentService
-class CommentService
-class SubscriptionService
-class SearchService
-class DashboardService
-class FileUploadService
-class ApiResponse_T_
-class PageResponse_T_
-class AuthResponse
-class LoginRequest
-class RegisterRequest
-class ContentDto
-class CommentDto
-class UserDto
-class CreateContentRequest
-AuthController --> UserService
-UserController --> UserService
-ContentController --> ContentService
-CommentController --> CommentService
-SubscriptionController --> SubscriptionService
-SearchController --> SearchService
-DashboardController --> DashboardService
-UploadController --> FileUploadService
-DashboardController --> FileUploadService
-AuthController --> AuthResponse
-AuthController --> LoginRequest
-AuthController --> RegisterRequest
-ContentController --> CreateContentRequest
-ContentController --> ContentDto
-CommentController --> CommentDto
-UserController --> UserDto
-DashboardController --> UserDto
-UploadController --> ApiResponse_T_
-AuthController --> ApiResponse_T_
-ContentController --> ApiResponse_T_
-CommentController --> ApiResponse_T_
-SubscriptionController --> ApiResponse_T_
-SearchController --> ApiResponse_T_
-DashboardController --> ApiResponse_T_
-UploadController --> ApiResponse_T_
-DashboardController --> PageResponse_T_
-ContentController --> PageResponse_T_
-CommentController --> PageResponse_T_
-SubscriptionController --> PageResponse_T_
-SearchController --> PageResponse_T_
+graph LR
+AC["AuthController"] --> US["UserService"]
+CC["ContentController"] --> CS["ContentService"]
+ComC["CommentController"] --> Cos["CommentService"]
+SC["SubscriptionController"] --> Sus["SubscriptionService"]
+SeC["SearchController"] --> SS["SearchService"]
+NC["NotificationController"] --> NS["NotificationService"]
+DC["DashboardController"] --> DS["DashboardService"]
+DC --> CS
+DC --> FUS["FileUploadService"]
+UC["UploadController"] --> FUS
 ```
 
-**图表来源**
-- [AuthController.java:1-42](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L1-L42)
-- [UserController.java:1-26](file://communication-backend/src/main/java/com/communication/controller/UserController.java#L1-L26)
-- [ContentController.java:1-85](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L1-L85)
-- [CommentController.java:1-55](file://communication-backend/src/main/java/com/communication/controller/CommentController.java#L1-L55)
-- [SubscriptionController.java:1-77](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java#L1-L77)
-- [SearchController.java:1-56](file://communication-backend/src/main/java/com/communication/controller/SearchController.java#L1-L56)
-- [DashboardController.java:1-65](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java#L1-L65)
-- [UploadController.java:1-59](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L1-L59)
-- [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
-- [PageResponse.java:1-65](file://communication-backend/src/main/java/com/communication/dto/PageResponse.java#L1-L65)
-- [AuthResponse.java:1-47](file://communication-backend/src/main/java/com/communication/dto/AuthResponse.java#L1-L47)
-- [LoginRequest.java:1-20](file://communication-backend/src/main/java/com/communication/dto/LoginRequest.java#L1-L20)
-- [RegisterRequest.java:1-30](file://communication-backend/src/main/java/com/communication/dto/RegisterRequest.java#L1-L30)
-- [ContentDto.java:1-118](file://communication-backend/src/main/java/com/communication/dto/ContentDto.java#L1-L118)
-- [CommentDto.java:1-99](file://communication-backend/src/main/java/com/communication/dto/CommentDto.java#L1-L99)
-- [UserDto.java:1-72](file://communication-backend/src/main/java/com/communication/dto/UserDto.java#L1-L72)
-- [CreateContentRequest.java:1-42](file://communication-backend/src/main/java/com/communication/dto/CreateContentRequest.java#L1-L42)
+图表来源
+- [AuthController.java:17-23](file://communication-backend/src/main/java/com/communication/controller/AuthController.java#L17-L23)
+- [ContentController.java:19-25](file://communication-backend/src/main/java/com/communication/controller/ContentController.java#L19-L25)
+- [CommentController.java:17-21](file://communication-backend/src/main/java/com/communication/controller/CommentController.java#L17-L21)
+- [SubscriptionController.java:13-17](file://communication-backend/src/main/java/com/communication/controller/SubscriptionController.java#L13-L17)
+- [SearchController.java:17-21](file://communication-backend/src/main/java/com/communication/controller/SearchController.java#L17-L21)
+- [NotificationController.java:16-20](file://communication-backend/src/main/java/com/communication/controller/NotificationController.java#L16-L20)
+- [DashboardController.java:17-25](file://communication-backend/src/main/java/com/communication/controller/DashboardController.java#L17-L25)
+- [UploadController.java:17-21](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L17-L21)
+
+章节来源
+- [application.yml:5-42](file://communication-backend/src/main/resources/application.yml#L5-L42)
 
 ## 性能考虑
-- **分页查询**：内容、评论、用户、订阅列表均支持page与size参数，默认合理限制，避免一次性返回大量数据。
-- **访问量统计**：获取内容详情时增加浏览计数，建议在数据库层面原子递增或缓存降压。
-- **媒体文件**：头像上传走独立接口，建议结合CDN与缩略图策略优化加载速度。
-- **缓存策略**：热门标签、订阅动态流可引入Redis缓存，降低数据库压力。
-- **文件上传**：支持图片和视频类型验证，建议在前端进行预校验减少无效请求。
-- **统一响应**：ApiResponse的builder模式减少了对象创建开销，提高了序列化效率。
-- **前端优化**：统一响应格式简化了前端数据提取逻辑，减少了重复的错误处理代码。
+- 分页参数：合理设置page与size，避免一次性加载过多数据
+- 文件上传：受max-file-size与max-request-size限制，建议前端预校验文件类型与大小
+- JWT过期：根据业务安全需求调整过期时间
+- 数据库：Flyway迁移确保schema一致性，避免运行时DDL变更
 
-## 故障排除指南
-常见错误与处理
-- **400 Bad Request**：请求参数缺失或格式不正确（如用户名/邮箱/密码长度不符）。检查请求体字段与校验规则。
-- **401 Unauthorized**：缺少或无效的Authorization头。确认token有效且未过期。
-- **403 Forbidden**：无权限操作（如非内容作者删除内容）。检查当前用户与资源归属。
-- **404 Not Found**：资源不存在（用户、内容、评论、订阅关系）。确认ID有效性。
-- **文件上传错误**：检查文件类型是否在支持列表内，文件大小是否超过限制。
-- **全局异常**：由全局异常处理器捕获并返回标准错误响应，包含错误码与消息。
-- **响应格式问题**：所有响应均采用ApiResponse统一格式，确保前后端一致性。
-- **前端错误处理**：axios拦截器已适配统一响应格式，自动处理401、403、404等状态码。
+## 故障排查指南
+- 统一错误响应：错误时返回ApiResponse，包含code与message
+- 常见问题
+  - 400 错误：请求参数无效或文件类型不被允许
+  - 401 错误：缺少或无效的Bearer Token
+  - 403 错误：权限不足（如删除非本人内容）
+  - 404 错误：资源不存在（如内容/评论/用户）
+  - 500 错误：服务器内部异常
+- 调试建议
+  - 使用curl或Postman发送请求，检查响应体中的code/message
+  - 对分页接口，确认page与size参数范围
+  - 对文件上传，确认Content-Type与allowed-types配置
 
-**更新** 新增统一响应格式的故障排除指导，帮助开发者识别和解决常见的响应格式问题。前端拦截器已优化以更好地支持新的响应结构。
-
-**章节来源**
-- [GlobalExceptionHandler.java:1-63](file://communication-backend/src/main/java/com/communication/exception/GlobalExceptionHandler.java#L1-L63)
-- [BadRequestException.java:1-13](file://communication-backend/src/main/java/com/communication/exception/BadRequestException.java#L1-L13)
-- [ResourceNotFoundException.java](file://communication-backend/src/main/java/com/communication/exception/ResourceNotFoundException.java)
-- [http.ts:1-70](file://communication-frontend/src/api/http.ts#L1-L70)
+章节来源
+- [ApiResponse.java:50-56](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L50-L56)
+- [UploadController.java:27-30](file://communication-backend/src/main/java/com/communication/controller/UploadController.java#L27-L30)
+- [application.yml:25-28](file://communication-backend/src/main/resources/application.yml#L25-L28)
 
 ## 结论
-本API文档提供了通信平台的完整RESTful接口规范，涵盖认证、用户、内容、评论、订阅、搜索、后台管理、文件上传等模块。通过统一的ApiResponse<T>响应格式、严格的参数校验与完善的错误处理机制，确保前后端协作的一致性与可靠性。
-
-**更新** 本次重大改进标准化了所有API响应格式，提供了更加一致和可靠的接口体验。前端拦截器已完全适配新的响应格式，简化了错误处理逻辑。建议客户端在集成时严格遵循鉴权流程与分页规范，并根据实际场景选择合适的缓存与限流策略。
+本API文档提供了从认证到内容、评论、订阅、搜索、通知、仪表盘与媒体上传的完整接口清单，统一的响应封装与分页结构便于前后端协作。建议在生产环境中结合JWT安全策略、文件类型白名单与合理的分页策略，持续优化性能与安全性。
 
 ## 附录
-
-### JWT认证与Token管理
-- **认证方式**：Bearer Token，置于Authorization头中（格式："Bearer {token}"）。
-- **过滤器**：JwtAuthenticationFilter负责从请求头提取token并验证，将认证信息注入到SecurityContext。
-- **刷新策略**：建议在AuthResponse中返回短期token，并在前端实现静默刷新或引导重新登录。
-- **安全建议**：HTTPS传输、短有效期token、服务端黑名单（如需撤销）。
-
-**章节来源**
-- [JwtAuthenticationFilter.java](file://communication-backend/src/main/java/com/communication/config/JwtAuthenticationFilter.java)
-- [SecurityConfig.java](file://communication-backend/src/main/java/com/communication/config/SecurityConfig.java)
-- [JwtUtil.java](file://communication-backend/src/main/java/com/communication/util/JwtUtil.java)
-
-### 统一响应格式详解
-- **字段说明**
-  - **code**：HTTP语义化的业务状态码（如200表示成功）
-  - **message**：简要描述
-  - **data**：业务数据（可能为空）
-  - **timestamp**：响应时间
-- **示例**
-  - 成功：{"code":200,"message":"Success","data":{},"timestamp":"2024-01-01T00:00:00"}
-  - 失败：{"code":400,"message":"参数错误","timestamp":"2024-01-01T00:00:00"}
-
-**更新** 统一响应格式已成为所有API的标准规范，确保了前后端交互的一致性和可靠性。前端拦截器已完全适配新的响应格式。
-
-**章节来源**
-- [ApiResponse.java:1-76](file://communication-backend/src/main/java/com/communication/dto/ApiResponse.java#L1-L76)
-
-### CORS跨域配置
-- **放行来源**：开发环境允许任意来源，生产环境建议限定可信域名。
-- **允许方法**：GET、POST、PUT、DELETE、OPTIONS等常用方法。
-- **凭证**：根据需要开启支持携带Cookie的跨域请求。
-
-**章节来源**
-- [CorsConfig.java](file://communication-backend/src/main/java/com/communication/config/CorsConfig.java)
-
-### API版本控制与兼容性
-- **版本策略**：当前接口位于/api路径下，建议在控制器上添加版本前缀以便演进。
-- **兼容性**：新增字段采用非必填，变更字段保持向后兼容；废弃字段保留但标记为不推荐使用。
-- **升级建议**：客户端定期同步接口文档，服务端提供迁移指引与过渡期支持。
-
-### 客户端集成最佳实践
-- **鉴权**：登录成功后持久化token，请求前自动附加Authorization头。
-- **错误处理**：针对401自动跳转登录，针对403提示权限不足，针对404提示资源不存在。
-- **分页**：遵循page与size参数，滚动加载时累计数据并去重。
-- **缓存**：对只读数据（如标签、公开内容列表）设置本地缓存，提升用户体验。
-- **文件上传**：在前端进行类型和大小预校验，上传进度显示，错误重试机制。
-- **错误上报**：统一收集API错误日志，便于定位问题。
-- **响应处理**：所有响应均采用ApiResponse统一格式，前端应统一解析code、message、data字段。
-- **拦截器优化**：axios拦截器已适配统一响应格式，自动处理各种HTTP状态码和错误情况。
-
-**更新** 前端拦截器已完全适配统一响应格式，提供了更好的错误处理体验。客户端应使用统一的响应格式来简化数据提取和错误处理逻辑。
-
-**章节来源**
-- [http.ts:1-70](file://communication-frontend/src/api/http.ts#L1-L70)
-- [auth.ts:1-96](file://communication-frontend/src/stores/auth.ts#L1-L96)
-- [auth.ts:1-49](file://communication-frontend/src/api/auth.ts#L1-L49)
+- 请求示例与响应示例详见“10-API接口文档.md”对应章节
+- 错误码说明：遵循ApiResponse.error(code,message)约定
